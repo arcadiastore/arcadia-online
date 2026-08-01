@@ -1,4 +1,5 @@
 using UnityEngine;
+using ArcadiaOnline.Player;
 
 namespace ArcadiaOnline.Monster
 {
@@ -254,12 +255,38 @@ namespace ArcadiaOnline.Monster
             isDead = true;
             currentState = AIState.Dead;
 
+            // Beri EXP ke player
+            GiveEXPToPlayer();
+
             Debug.Log($"[Monster] MATI! EXP: {expReward}");
 
             Collider col = GetComponent<Collider>();
             if (col != null) col.enabled = false;
 
             Destroy(gameObject, 2f);
+        }
+
+        /// <summary>
+        /// Beri EXP ke player.
+        /// </summary>
+        private void GiveEXPToPlayer()
+        {
+            // Cari LevelUpSystem di player
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                player = GameObject.Find("Player");
+            }
+
+            if (player != null)
+            {
+                LevelUpSystem levelUp = player.GetComponent<LevelUpSystem>();
+                if (levelUp != null)
+                {
+                    levelUp.AddEXP(expReward);
+                    Debug.Log($"[EXP] Player mendapat {expReward} EXP");
+                }
+            }
         }
 
         private void OnDrawGizmosSelected()
