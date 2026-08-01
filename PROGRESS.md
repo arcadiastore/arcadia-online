@@ -9,7 +9,7 @@
 | Fase | Status | Progress |
 |------|--------|----------|
 | Fase 0: Dokumentasi | ✅ SELESAI | 100% |
-| Fase 1: Prototipe | 🔄 DALAM PROSES | 95% |
+| Fase 1: Prototipe | 🔄 DALAM PROSES | 98% |
 | Fase 2: Vertical Slice | ⏳ BELUM MULAI | 0% |
 
 ---
@@ -88,10 +88,13 @@
 - [x] UI Prefab (HUD) - SimpleHUD
 - [x] Sound Effect (SFX) - Male/Female per action
 - [x] BGM System - Map + Battle
-- [ ] Material cel-shader dasar
-- [ ] Animasi dasar (idle, walk, run, attack)
-- [ ] Particle effect (hit, death)
-- [ ] Monster AI (patrol, chase)
+- [x] Material cel-shader dasar
+- [x] Animasi dasar (idle, walk, run, attack)
+- [x] Particle effect (hit, death)
+- [x] Monster AI (patrol, chase)
+- [x] Damage Popup System
+- [x] Level Up System (EXP, stats)
+- [x] Skill System (4 skills, cooldown)
 
 ---
 
