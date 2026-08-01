@@ -1,10 +1,10 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace ArcadiaOnline.VFX
 {
     /// <summary>
-    /// Damage popup yang otomatis menyesuaikan ukuran body monster.
+    /// Damage popup menggunakan 3D Text Mesh langsung.
+    /// Pasti terlihat karena pakai mesh renderer.
     /// </summary>
     public class DamagePopupSpawner : MonoBehaviour
     {
@@ -17,9 +17,9 @@ namespace ArcadiaOnline.VFX
         [SerializeField] private float lifetime = 0.8f;
 
         [Header("Ukuran")]
-        [SerializeField] private float canvasScaleMultiplier = 0.03f; // Sedang
-        [SerializeField] private int normalFontSize = 14;
-        [SerializeField] private int criticalFontSize = 18;
+        [SerializeField] private float characterSize = 0.2f; // Ukuran karakter 3D
+        [SerializeField] private int normalFontSize = 60;
+        [SerializeField] private int criticalFontSize = 80;
 
         void Awake()
         {
@@ -34,18 +34,17 @@ namespace ArcadiaOnline.VFX
         }
 
         /// <summary>
-        /// Spawn damage popup di posisi target dengan ukuran sesuai body.
+        /// Spawn damage popup di posisi target.
         /// </summary>
         public void SpawnDamagePopup(Vector3 targetPosition, float damage, bool isCritical, Transform target = null)
         {
             // Hitung ukuran body monster
-            float bodySize = 1f; // Default
+            float bodySize = 1f;
             if (target != null)
             {
                 Renderer renderer = target.GetComponentInChildren<Renderer>();
                 if (renderer != null)
                 {
-                    // Ambil ukuran bounds monster
                     Vector3 size = renderer.bounds.size;
                     bodySize = Mathf.Max(size.x, size.y, size.z);
                 }
@@ -59,61 +58,62 @@ namespace ArcadiaOnline.VFX
                 Random.Range(-randomOffset, randomOffset)
             );
 
-            // Hitung canvas scale berdasarkan body size
-            float canvasScale = bodySize * canvasScaleMultiplier;
+            // Buat GameObject
+            GameObject popupObj = new GameObject("DamagePopup");
+            popupObj.transform.position = spawnPos;
 
-            // Buat Canvas World Space
-            GameObject canvasObj = new GameObject("DamageCanvas");
-            canvasObj.transform.position = spawnPos;
-            canvasObj.transform.localScale = Vector3.one * canvasScale;
+            // Tambah TextMesh (3D text)
+            TextMesh textMesh = popupObj.AddComponent<TextMesh>();
+            textMesh.anchor = TextAnchor.MiddleCenter;
+            textMesh.alignment = TextAlignment.Center;
 
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            canvas.sortingOrder = 100;
+            // Set font default
+            textMesh.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (textMesh.font == null)
+            {
+                textMesh.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            }
 
-            // Buat Text child
-            GameObject textObj = new GameObject("DamageText");
-            textObj.transform.SetParent(canvasObj.transform, false);
+            // Set material untuk font
+            Renderer textRenderer = popupObj.GetComponent<Renderer>();
+            if (textRenderer != null)
+            {
+                textRenderer.material = new Material(Shader.Find("GUI/Text Shader"));
+            }
 
-            RectTransform rectTransform = textObj.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(100, 30);
-            rectTransform.anchoredPosition = Vector2.zero;
-
-            // Tambah Text component
-            Text text = textObj.AddComponent<Text>();
-            text.font = Font.CreateDynamicFontFromOSFont("Arial", 16);
-            text.alignment = TextAnchor.MiddleCenter;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
+            // Hitung character size berdasarkan body
+            float charSize = bodySize * 0.1f; // 10% dari body size
 
             // Set text dan warna
             if (isCritical)
             {
-                text.text = Mathf.CeilToInt(damage).ToString() + "!";
-                text.color = new Color(0.6f, 0f, 0.8f); // Ungu
-                text.fontSize = criticalFontSize;
-                text.fontStyle = FontStyle.Bold;
+                textMesh.text = Mathf.CeilToInt(damage).ToString() + "!";
+                textMesh.color = new Color(0.6f, 0f, 0.8f); // Ungu
+                textMesh.characterSize = charSize * 1.3f; // Sedikit lebih besar untuk critical
+                textMesh.fontSize = criticalFontSize;
+                textMesh.fontStyle = FontStyle.Bold;
             }
             else
             {
-                text.text = Mathf.CeilToInt(damage).ToString();
-                text.color = Color.red;
-                text.fontSize = normalFontSize;
-                text.fontStyle = FontStyle.Bold;
+                textMesh.text = Mathf.CeilToInt(damage).ToString();
+                textMesh.color = Color.red;
+                textMesh.characterSize = charSize;
+                textMesh.fontSize = normalFontSize;
+                textMesh.fontStyle = FontStyle.Bold;
             }
 
             // Tambah script animasi
-            DamagePopupAnim anim = canvasObj.AddComponent<DamagePopupAnim>();
-            anim.Setup(text, moveSpeed, lifetime);
+            DamagePopupAnim anim = popupObj.AddComponent<DamagePopupAnim>();
+            anim.Setup(textMesh, moveSpeed, lifetime);
 
             // Face camera
             if (Camera.main != null)
             {
-                canvasObj.transform.LookAt(Camera.main.transform);
-                canvasObj.transform.Rotate(0, 180, 0);
+                popupObj.transform.LookAt(Camera.main.transform);
+                popupObj.transform.Rotate(0, 180, 0);
             }
 
-            Debug.Log($"[DamagePopup] Spawned: {damage} (Critical: {isCritical}, BodySize: {bodySize}, Scale: {canvasScale})");
+            Debug.Log($"[DamagePopup] Spawned: {damage} (Critical: {isCritical}, BodySize: {bodySize}, CharSize: {charSize})");
         }
     }
 
@@ -122,18 +122,18 @@ namespace ArcadiaOnline.VFX
     /// </summary>
     public class DamagePopupAnim : MonoBehaviour
     {
-        private Text text;
+        private TextMesh textMesh;
         private float moveSpeed;
         private float lifetime;
         private float elapsed = 0f;
         private Color startColor;
 
-        public void Setup(Text text, float moveSpeed, float lifetime)
+        public void Setup(TextMesh textMesh, float moveSpeed, float lifetime)
         {
-            this.text = text;
+            this.textMesh = textMesh;
             this.moveSpeed = moveSpeed;
             this.lifetime = lifetime;
-            this.startColor = text.color;
+            this.startColor = textMesh.color;
         }
 
         void Update()
@@ -152,11 +152,11 @@ namespace ArcadiaOnline.VFX
 
             // Fade out
             float fadeProgress = elapsed / lifetime;
-            if (fadeProgress < 1f && text != null)
+            if (fadeProgress < 1f && textMesh != null)
             {
                 Color c = startColor;
                 c.a = 1f - fadeProgress;
-                text.color = c;
+                textMesh.color = c;
             }
 
             // Destroy setelah lifetime
