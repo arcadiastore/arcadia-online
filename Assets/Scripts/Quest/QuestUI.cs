@@ -1,0 +1,563 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
+
+namespace ArcadiaOnline.Quest
+{
+    /// <summary>
+    /// UI untuk quest system.
+    /// </summary>
+    public class QuestUI : MonoBehaviour
+    {
+        public static QuestUI Instance { get; private set; }
+
+        [Header("UI References")]
+        [SerializeField] private GameObject questPanel;
+        [SerializeField] private Transform questListParent;
+        [SerializeField] private GameObject questItemPrefab;
+
+        [Header("Quest Detail")]
+        [SerializeField] private GameObject detailPanel;
+        [SerializeField] private Text questNameText;
+        [SerializeField] private Text questDescText;
+        [SerializeField] private Text objectivesText;
+        [SerializeField] private Text rewardsText;
+        [SerializeField] private Button acceptButton;
+        [SerializeField] private Button abandonButton;
+        [SerializeField] private Button claimButton;
+
+        [Header("Tab Buttons")]
+        [SerializeField] private Button activeTab;
+        [SerializeField] private Button availableTab;
+        [SerializeField] private Button completedTab;
+
+        [Header("Auto-Create UI")]
+        [SerializeField] private bool autoCreateUI = true;
+
+        // State
+        private QuestData selectedQuest;
+        private int currentTab = 0; // 0=Active, 1=Available, 2=Completed
+
+        void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        void Start()
+        {
+            if (autoCreateUI && questPanel == null)
+            {
+                CreateQuestUI();
+            }
+
+            // Hide panel by default
+            if (questPanel != null)
+            {
+                questPanel.SetActive(false);
+            }
+
+            // Register events
+            if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.OnQuestAccepted += OnQuestAccepted;
+                QuestManager.Instance.OnQuestCompleted += OnQuestCompleted;
+                QuestManager.Instance.OnQuestClaimed += OnQuestClaimed;
+                QuestManager.Instance.OnObjectiveUpdated += OnObjectiveUpdated;
+            }
+
+            // Setup buttons
+            SetupButtons();
+        }
+
+        void Update()
+        {
+            // Toggle quest panel dengan J
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                ToggleQuestPanel();
+            }
+        }
+
+        /// <summary>
+        /// Setup button listeners.
+        /// </summary>
+        private void SetupButtons()
+        {
+            if (acceptButton != null)
+            {
+                acceptButton.onClick.AddListener(OnAcceptClicked);
+            }
+
+            if (abandonButton != null)
+            {
+                abandonButton.onClick.AddListener(OnAbandonClicked);
+            }
+
+            if (claimButton != null)
+            {
+                claimButton.onClick.AddListener(OnClaimClicked);
+            }
+
+            if (activeTab != null)
+            {
+                activeTab.onClick.AddListener(() => SetTab(0));
+            }
+
+            if (availableTab != null)
+            {
+                availableTab.onClick.AddListener(() => SetTab(1));
+            }
+
+            if (completedTab != null)
+            {
+                completedTab.onClick.AddListener(() => SetTab(2));
+            }
+        }
+
+        /// <summary>
+        /// Toggle quest panel.
+        /// </summary>
+        public void ToggleQuestPanel()
+        {
+            if (questPanel != null)
+            {
+                bool isActive = !questPanel.activeSelf;
+                questPanel.SetActive(isActive);
+
+                if (isActive)
+                {
+                    RefreshQuestList();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set active tab.
+        /// </summary>
+        private void SetTab(int tab)
+        {
+            currentTab = tab;
+            RefreshQuestList();
+        }
+
+        /// <summary>
+        /// Refresh quest list.
+        /// </summary>
+        private void RefreshQuestList()
+        {
+            if (QuestManager.Instance == null) return;
+
+            // Clear existing items
+            if (questListParent != null)
+            {
+                foreach (Transform child in questListParent)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+
+            // Get quests based on tab
+            List<QuestData> quests = new List<QuestData>();
+            switch (currentTab)
+            {
+                case 0:
+                    quests = QuestManager.Instance.GetActiveQuests();
+                    break;
+                case 1:
+                    quests = QuestManager.Instance.GetAvailableQuests();
+                    break;
+                case 2:
+                    quests = QuestManager.Instance.GetCompletedQuests();
+                    break;
+            }
+
+            // Create quest items
+            if (questItemPrefab != null && questListParent != null)
+            {
+                foreach (QuestData quest in quests)
+                {
+                    GameObject item = Instantiate(questItemPrefab, questListParent);
+                    QuestItemUI itemUI = item.GetComponent<QuestItemUI>();
+
+                    if (itemUI != null)
+                    {
+                        itemUI.Setup(quest);
+                    }
+
+                    // Add click listener
+                    Button button = item.GetComponent<Button>();
+                    if (button != null)
+                    {
+                        QuestData questRef = quest;
+                        button.onClick.AddListener(() => SelectQuest(questRef));
+                    }
+                }
+            }
+
+            // Update tab button colors
+            UpdateTabColors();
+        }
+
+        /// <summary>
+        /// Update tab button colors.
+        /// </summary>
+        private void UpdateTabColors()
+        {
+            Color activeColor = new Color(0.3f, 0.6f, 1f);
+            Color inactiveColor = new Color(0.5f, 0.5f, 0.5f);
+
+            if (activeTab != null)
+            {
+                activeTab.GetComponent<Image>().color = currentTab == 0 ? activeColor : inactiveColor;
+            }
+
+            if (availableTab != null)
+            {
+                availableTab.GetComponent<Image>().color = currentTab == 1 ? activeColor : inactiveColor;
+            }
+
+            if (completedTab != null)
+            {
+                completedTab.GetComponent<Image>().color = currentTab == 2 ? activeColor : inactiveColor;
+            }
+        }
+
+        /// <summary>
+        /// Select quest to show details.
+        /// </summary>
+        private void SelectQuest(QuestData quest)
+        {
+            selectedQuest = quest;
+            ShowQuestDetails(quest);
+        }
+
+        /// <summary>
+        /// Show quest details.
+        /// </summary>
+        private void ShowQuestDetails(QuestData quest)
+        {
+            if (detailPanel == null || quest == null) return;
+
+            detailPanel.SetActive(true);
+
+            // Set quest name
+            if (questNameText != null)
+            {
+                questNameText.text = quest.questName;
+            }
+
+            // Set quest description
+            if (questDescText != null)
+            {
+                questDescText.text = quest.description;
+            }
+
+            // Set objectives
+            if (objectivesText != null)
+            {
+                string objText = "";
+                foreach (var objective in quest.objectives)
+                {
+                    string status = objective.IsComplete() ? "<color=green>✓</color>" : "○";
+                    objText += $"{status} {objective.description} ({objective.GetProgressString()})\n";
+                }
+                objectivesText.text = objText;
+            }
+
+            // Set rewards
+            if (rewardsText != null)
+            {
+                string rewardText = "";
+                if (quest.rewards.expReward > 0)
+                    rewardText += $"EXP: +{quest.rewards.expReward}\n";
+                if (quest.rewards.goldReward > 0)
+                    rewardText += $"Gold: +{quest.rewards.goldReward}\n";
+                rewardsText.text = rewardText;
+            }
+
+            // Update buttons
+            UpdateButtons(quest);
+        }
+
+        /// <summary>
+        /// Update button visibility.
+        /// </summary>
+        private void UpdateButtons(QuestData quest)
+        {
+            if (QuestManager.Instance == null) return;
+
+            QuestStatus status = QuestManager.Instance.GetQuestStatus(quest.questID);
+
+            // Accept button
+            if (acceptButton != null)
+            {
+                acceptButton.gameObject.SetActive(status == QuestStatus.Available);
+            }
+
+            // Abandon button
+            if (abandonButton != null)
+            {
+                abandonButton.gameObject.SetActive(status == QuestStatus.Active);
+            }
+
+            // Claim button
+            if (claimButton != null)
+            {
+                claimButton.gameObject.SetActive(status == QuestStatus.Completed);
+            }
+        }
+
+        /// <summary>
+        /// On accept button clicked.
+        /// </summary>
+        private void OnAcceptClicked()
+        {
+            if (selectedQuest == null || QuestManager.Instance == null) return;
+
+            QuestManager.Instance.AcceptQuest(selectedQuest.questID);
+            RefreshQuestList();
+        }
+
+        /// <summary>
+        /// On abandon button clicked.
+        /// </summary>
+        private void OnAbandonClicked()
+        {
+            if (selectedQuest == null || QuestManager.Instance == null) return;
+
+            QuestManager.Instance.AbandonQuest(selectedQuest.questID);
+            RefreshQuestList();
+        }
+
+        /// <summary>
+        /// On claim button clicked.
+        /// </summary>
+        private void OnClaimClicked()
+        {
+            if (selectedQuest == null || QuestManager.Instance == null) return;
+
+            QuestManager.Instance.ClaimReward(selectedQuest.questID);
+            RefreshQuestList();
+        }
+
+        // Event handlers
+        private void OnQuestAccepted(QuestData quest)
+        {
+            Debug.Log($"[QuestUI] Quest accepted: {quest.questName}");
+        }
+
+        private void OnQuestCompleted(QuestData quest)
+        {
+            Debug.Log($"[QuestUI] Quest completed: {quest.questName}");
+        }
+
+        private void OnQuestClaimed(QuestData quest)
+        {
+            Debug.Log($"[QuestUI] Quest claimed: {quest.questName}");
+        }
+
+        private void OnObjectiveUpdated(QuestData quest, QuestObjective objective)
+        {
+            Debug.Log($"[QuestUI] Objective updated: {objective.description}");
+        }
+
+        /// <summary>
+        /// Auto-create quest UI.
+        /// </summary>
+        private void CreateQuestUI()
+        {
+            // Find Canvas
+            Canvas canvas = FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[QuestUI] Canvas not found!");
+                return;
+            }
+
+            // Create Quest Panel
+            questPanel = new GameObject("QuestPanel");
+            questPanel.transform.SetParent(canvas.transform, false);
+
+            RectTransform panelRect = questPanel.AddComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0.1f, 0.1f);
+            panelRect.anchorMax = new Vector2(0.9f, 0.9f);
+            panelRect.offsetMin = Vector2.zero;
+            panelRect.offsetMax = Vector2.zero;
+
+            Image panelBg = questPanel.AddComponent<Image>();
+            panelBg.color = new Color(0, 0, 0, 0.9f);
+
+            // Create tabs
+            CreateTabs();
+
+            // Create quest list
+            questListParent = new GameObject("QuestList").transform;
+            questListParent.SetParent(questPanel.transform, false);
+
+            RectTransform listRect = questListParent.gameObject.AddComponent<RectTransform>();
+            listRect.anchorMin = new Vector2(0, 0);
+            listRect.anchorMax = new Vector2(0.4f, 0.9f);
+            listRect.offsetMin = new Vector2(10, 10);
+            listRect.offsetMax = new Vector2(-5, -40);
+
+            // Create detail panel
+            CreateDetailPanel();
+
+            // Setup buttons
+            SetupButtons();
+
+            Debug.Log("[QuestUI] Quest UI created!");
+        }
+
+        private void CreateTabs()
+        {
+            // Tab buttons
+            activeTab = CreateTabButton("ActiveTab", "Active", new Vector2(0, 0.9f), new Vector2(0.15f, 1));
+            availableTab = CreateTabButton("AvailableTab", "Available", new Vector2(0.15f, 0.9f), new Vector2(0.3f, 1));
+            completedTab = CreateTabButton("CompletedTab", "Completed", new Vector2(0.3f, 0.9f), new Vector2(0.45f, 1));
+        }
+
+        private Button CreateTabButton(string name, string text, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            GameObject buttonObj = new GameObject(name);
+            buttonObj.transform.SetParent(questPanel.transform, false);
+
+            RectTransform rect = buttonObj.AddComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = new Vector2(5, 0);
+            rect.offsetMax = new Vector2(-5, -5);
+
+            Image image = buttonObj.AddComponent<Image>();
+            image.color = new Color(0.3f, 0.3f, 0.3f);
+
+            Button button = buttonObj.AddComponent<Button>();
+
+            // Text
+            GameObject textObj = new GameObject("Text");
+            textObj.transform.SetParent(buttonObj.transform, false);
+
+            RectTransform textRect = textObj.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            Text textComp = textObj.AddComponent<Text>();
+            textComp.text = text;
+            textComp.fontSize = 12;
+            textComp.alignment = TextAnchor.MiddleCenter;
+            textComp.color = Color.white;
+            textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            return button;
+        }
+
+        private void CreateDetailPanel()
+        {
+            detailPanel = new GameObject("DetailPanel");
+            detailPanel.transform.SetParent(questPanel.transform, false);
+
+            RectTransform detailRect = detailPanel.AddComponent<RectTransform>();
+            detailRect.anchorMin = new Vector2(0.4f, 0);
+            detailRect.anchorMax = new Vector2(1, 0.9f);
+            detailRect.offsetMin = new Vector2(5, 10);
+            detailRect.offsetMax = new Vector2(-10, -40);
+
+            Image detailBg = detailPanel.AddComponent<Image>();
+            detailBg.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+            // Quest name
+            questNameText = CreateTextElement("QuestName", "Quest Name", 18, TextAnchor.UpperLeft, Color.yellow);
+            questNameText.rectTransform.SetParent(detailPanel.transform, false);
+            questNameText.rectTransform.anchorMin = new Vector2(0, 0.85f);
+            questNameText.rectTransform.anchorMax = new Vector2(1, 1);
+            questNameText.rectTransform.offsetMin = new Vector2(10, 0);
+            questNameText.rectTransform.offsetMax = new Vector2(-10, -5);
+
+            // Quest description
+            questDescText = CreateTextElement("QuestDesc", "Description", 14, TextAnchor.UpperLeft, Color.white);
+            questDescText.rectTransform.SetParent(detailPanel.transform, false);
+            questDescText.rectTransform.anchorMin = new Vector2(0, 0.6f);
+            questDescText.rectTransform.anchorMax = new Vector2(1, 0.85f);
+            questDescText.rectTransform.offsetMin = new Vector2(10, 0);
+            questDescText.rectTransform.offsetMax = new Vector2(-10, 0);
+
+            // Objectives
+            objectivesText = CreateTextElement("Objectives", "Objectives", 14, TextAnchor.UpperLeft, Color.white);
+            objectivesText.rectTransform.SetParent(detailPanel.transform, false);
+            objectivesText.rectTransform.anchorMin = new Vector2(0, 0.3f);
+            objectivesText.rectTransform.anchorMax = new Vector2(1, 0.6f);
+            objectivesText.rectTransform.offsetMin = new Vector2(10, 0);
+            objectivesText.rectTransform.offsetMax = new Vector2(-10, 0);
+
+            // Rewards
+            rewardsText = CreateTextElement("Rewards", "Rewards", 14, TextAnchor.UpperLeft, Color.green);
+            rewardsText.rectTransform.SetParent(detailPanel.transform, false);
+            rewardsText.rectTransform.anchorMin = new Vector2(0, 0.1f);
+            rewardsText.rectTransform.anchorMax = new Vector2(1, 0.3f);
+            rewardsText.rectTransform.offsetMin = new Vector2(10, 0);
+            rewardsText.rectTransform.offsetMax = new Vector2(-10, 0);
+
+            // Buttons
+            acceptButton = CreateButton("AcceptButton", "Accept", new Vector2(0.6f, 0), new Vector2(0.8f, 0.1f));
+            abandonButton = CreateButton("AbandonButton", "Abandon", new Vector2(0.8f, 0), new Vector2(1, 0.1f));
+            claimButton = CreateButton("ClaimButton", "Claim", new Vector2(0.6f, 0), new Vector2(1, 0.1f));
+        }
+
+        private Text CreateTextElement(string name, string text, int fontSize, TextAnchor alignment, Color color)
+        {
+            GameObject textObj = new GameObject(name);
+            Text textComp = textObj.AddComponent<Text>();
+            textComp.text = text;
+            textComp.fontSize = fontSize;
+            textComp.alignment = alignment;
+            textComp.color = color;
+            textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            return textComp;
+        }
+
+        private Button CreateButton(string name, string text, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            GameObject buttonObj = new GameObject(name);
+            buttonObj.transform.SetParent(detailPanel.transform, false);
+
+            RectTransform rect = buttonObj.AddComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = new Vector2(5, 5);
+            rect.offsetMax = new Vector2(-5, -5);
+
+            Image image = buttonObj.AddComponent<Image>();
+            image.color = new Color(0.3f, 0.5f, 0.3f);
+
+            Button button = buttonObj.AddComponent<Button>();
+
+            // Text
+            GameObject textObj = new GameObject("Text");
+            textObj.transform.SetParent(buttonObj.transform, false);
+
+            RectTransform textRect = textObj.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            Text textComp = textObj.AddComponent<Text>();
+            textComp.text = text;
+            textComp.fontSize = 14;
+            textComp.alignment = TextAnchor.MiddleCenter;
+            textComp.color = Color.white;
+            textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            return button;
+        }
+    }
+}
