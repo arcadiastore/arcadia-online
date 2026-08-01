@@ -13,30 +13,27 @@ namespace ArcadiaOnline.Quest
 
         [Header("UI References")]
         [SerializeField] private GameObject questPanel;
-        [SerializeField] private Transform questListParent;
-        [SerializeField] private GameObject questItemPrefab;
-
-        [Header("Quest Detail")]
-        [SerializeField] private GameObject detailPanel;
-        [SerializeField] private Text questNameText;
-        [SerializeField] private Text questDescText;
-        [SerializeField] private Text objectivesText;
-        [SerializeField] private Text rewardsText;
-        [SerializeField] private Button acceptButton;
-        [SerializeField] private Button abandonButton;
-        [SerializeField] private Button claimButton;
-
-        [Header("Tab Buttons")]
-        [SerializeField] private Button activeTab;
-        [SerializeField] private Button availableTab;
-        [SerializeField] private Button completedTab;
 
         [Header("Auto-Create UI")]
         [SerializeField] private bool autoCreateUI = true;
 
+        // Internal references (auto-created)
+        private Transform questListParent;
+        private GameObject detailPanel;
+        private Text questNameText;
+        private Text questDescText;
+        private Text objectivesText;
+        private Text rewardsText;
+        private Button acceptButton;
+        private Button abandonButton;
+        private Button claimButton;
+        private Button activeTab;
+        private Button availableTab;
+        private Button completedTab;
+
         // State
         private QuestData selectedQuest;
-        private int currentTab = 0; // 0=Active, 1=Available, 2=Completed
+        private int currentTab = 0;
         private bool isPanelActive = false;
 
         void Awake()
@@ -67,10 +64,13 @@ namespace ArcadiaOnline.Quest
                 QuestManager.Instance.OnObjectiveUpdated += OnObjectiveUpdated;
             }
 
-            // Setup buttons
-            SetupButtons();
+            // Hide panel at end of frame
+            StartCoroutine(HidePanelAtEndOfFrame());
+        }
 
-            // Hide panel by default
+        private System.Collections.IEnumerator HidePanelAtEndOfFrame()
+        {
+            yield return new WaitForEndOfFrame();
             HidePanel();
         }
 
@@ -80,42 +80,6 @@ namespace ArcadiaOnline.Quest
             if (Input.GetKeyDown(KeyCode.J))
             {
                 ToggleQuestPanel();
-            }
-        }
-
-        /// <summary>
-        /// Setup button listeners.
-        /// </summary>
-        private void SetupButtons()
-        {
-            if (acceptButton != null)
-            {
-                acceptButton.onClick.AddListener(OnAcceptClicked);
-            }
-
-            if (abandonButton != null)
-            {
-                abandonButton.onClick.AddListener(OnAbandonClicked);
-            }
-
-            if (claimButton != null)
-            {
-                claimButton.onClick.AddListener(OnClaimClicked);
-            }
-
-            if (activeTab != null)
-            {
-                activeTab.onClick.AddListener(() => SetTab(0));
-            }
-
-            if (availableTab != null)
-            {
-                availableTab.onClick.AddListener(() => SetTab(1));
-            }
-
-            if (completedTab != null)
-            {
-                completedTab.onClick.AddListener(() => SetTab(2));
             }
         }
 
@@ -144,6 +108,7 @@ namespace ArcadiaOnline.Quest
                 questPanel.SetActive(true);
                 isPanelActive = true;
                 RefreshQuestList();
+                Debug.Log("[QuestUI] Panel shown");
             }
         }
 
@@ -156,16 +121,8 @@ namespace ArcadiaOnline.Quest
             {
                 questPanel.SetActive(false);
                 isPanelActive = false;
+                Debug.Log("[QuestUI] Panel hidden");
             }
-        }
-
-        /// <summary>
-        /// Set active tab.
-        /// </summary>
-        private void SetTab(int tab)
-        {
-            currentTab = tab;
-            RefreshQuestList();
         }
 
         /// <summary>
@@ -218,7 +175,7 @@ namespace ArcadiaOnline.Quest
         }
 
         /// <summary>
-        /// Create quest item directly (no prefab).
+        /// Create quest item directly.
         /// </summary>
         private void CreateQuestItem(QuestData quest)
         {
@@ -323,17 +280,20 @@ namespace ArcadiaOnline.Quest
 
             if (activeTab != null)
             {
-                activeTab.GetComponent<Image>().color = currentTab == 0 ? activeColor : inactiveColor;
+                Image img = activeTab.GetComponent<Image>();
+                if (img != null) img.color = currentTab == 0 ? activeColor : inactiveColor;
             }
 
             if (availableTab != null)
             {
-                availableTab.GetComponent<Image>().color = currentTab == 1 ? activeColor : inactiveColor;
+                Image img = availableTab.GetComponent<Image>();
+                if (img != null) img.color = currentTab == 1 ? activeColor : inactiveColor;
             }
 
             if (completedTab != null)
             {
-                completedTab.GetComponent<Image>().color = currentTab == 2 ? activeColor : inactiveColor;
+                Image img = completedTab.GetComponent<Image>();
+                if (img != null) img.color = currentTab == 2 ? activeColor : inactiveColor;
             }
         }
 
@@ -355,31 +315,27 @@ namespace ArcadiaOnline.Quest
 
             detailPanel.SetActive(true);
 
-            // Set quest name
             if (questNameText != null)
             {
                 questNameText.text = quest.questName;
             }
 
-            // Set quest description
             if (questDescText != null)
             {
                 questDescText.text = quest.description;
             }
 
-            // Set objectives
             if (objectivesText != null)
             {
                 string objText = "";
                 foreach (var objective in quest.objectives)
                 {
-                    string status = objective.IsComplete() ? "<color=green>✓</color>" : "○";
+                    string status = objective.IsComplete() ? "<color=green>[Done]</color>" : "[ ]";
                     objText += $"{status} {objective.description} ({objective.GetProgressString()})\n";
                 }
                 objectivesText.text = objText;
             }
 
-            // Set rewards
             if (rewardsText != null)
             {
                 string rewardText = "";
@@ -390,7 +346,6 @@ namespace ArcadiaOnline.Quest
                 rewardsText.text = rewardText;
             }
 
-            // Update buttons
             UpdateButtons(quest);
         }
 
@@ -403,23 +358,14 @@ namespace ArcadiaOnline.Quest
 
             QuestStatus status = QuestManager.Instance.GetQuestStatus(quest.questID);
 
-            // Accept button
             if (acceptButton != null)
-            {
                 acceptButton.gameObject.SetActive(status == QuestStatus.Available);
-            }
 
-            // Abandon button
             if (abandonButton != null)
-            {
                 abandonButton.gameObject.SetActive(status == QuestStatus.Active);
-            }
 
-            // Claim button
             if (claimButton != null)
-            {
                 claimButton.gameObject.SetActive(status == QuestStatus.Completed);
-            }
         }
 
         /// <summary>
@@ -431,6 +377,7 @@ namespace ArcadiaOnline.Quest
 
             QuestManager.Instance.AcceptQuest(selectedQuest.questID);
             RefreshQuestList();
+            ShowQuestDetails(selectedQuest);
         }
 
         /// <summary>
@@ -442,6 +389,7 @@ namespace ArcadiaOnline.Quest
 
             QuestManager.Instance.AbandonQuest(selectedQuest.questID);
             RefreshQuestList();
+            detailPanel.SetActive(false);
         }
 
         /// <summary>
@@ -453,6 +401,7 @@ namespace ArcadiaOnline.Quest
 
             QuestManager.Instance.ClaimReward(selectedQuest.questID);
             RefreshQuestList();
+            detailPanel.SetActive(false);
         }
 
         // Event handlers
@@ -506,14 +455,9 @@ namespace ArcadiaOnline.Quest
             CreateTabs();
 
             // Create quest list parent
-            questListParent = new GameObject("QuestList").transform;
-            questListParent.SetParent(questPanel.transform, false);
-
-            RectTransform listRect = questListParent.gameObject.AddComponent<RectTransform>();
-            listRect.anchorMin = new Vector2(0, 0);
-            listRect.anchorMax = new Vector2(0.4f, 0.9f);
-            listRect.offsetMin = new Vector2(10, 10);
-            listRect.offsetMax = new Vector2(-5, -40);
+            questListParent = CreatePanel("QuestList", questPanel.transform,
+                new Vector2(0, 0), new Vector2(0.4f, 0.9f),
+                new Vector2(10, 10), new Vector2(-5, -40));
 
             // Add VerticalLayoutGroup
             VerticalLayoutGroup layout = questListParent.gameObject.AddComponent<VerticalLayoutGroup>();
@@ -525,15 +469,31 @@ namespace ArcadiaOnline.Quest
             // Create detail panel
             CreateDetailPanel();
 
-            // Setup buttons
-            SetupButtons();
+            // Hide panel initially
+            questPanel.SetActive(false);
+            isPanelActive = false;
 
             Debug.Log("[QuestUI] Quest UI created!");
         }
 
+        private Transform CreatePanel(string name, Transform parent,
+            Vector2 anchorMin, Vector2 anchorMax,
+            Vector2 offsetMin, Vector2 offsetMax)
+        {
+            GameObject panel = new GameObject(name);
+            panel.transform.SetParent(parent, false);
+
+            RectTransform rect = panel.AddComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = offsetMin;
+            rect.offsetMax = offsetMax;
+
+            return panel.transform;
+        }
+
         private void CreateTabs()
         {
-            // Tab buttons
             activeTab = CreateTabButton("ActiveTab", "Active", new Vector2(0, 0.9f), new Vector2(0.15f, 1));
             availableTab = CreateTabButton("AvailableTab", "Available", new Vector2(0.15f, 0.9f), new Vector2(0.3f, 1));
             completedTab = CreateTabButton("CompletedTab", "Completed", new Vector2(0.3f, 0.9f), new Vector2(0.45f, 1));
