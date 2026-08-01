@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using ArcadiaOnline.VFX;
+using ArcadiaOnline.Monster;
 
 namespace ArcadiaOnline.Combat
 {

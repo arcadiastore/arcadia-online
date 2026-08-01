@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using ArcadiaOnline.Monster;
 
 namespace ArcadiaOnline.UI
 {
@@ -28,7 +29,7 @@ namespace ArcadiaOnline.UI
         {
             if (skillSystem == null)
             {
-                skillSystem = FindFirstObjectByType<Combat.SkillSystem>();
+                skillSystem = FindAnyObjectByType<Combat.SkillSystem>();
             }
 
             CreateSkillSlots();
@@ -209,7 +210,7 @@ namespace ArcadiaOnline.UI
         /// </summary>
         private Transform FindClosestMonster()
         {
-            SimpleMonsterAI[] monsters = FindObjectsByType<SimpleMonsterAI>(FindObjectsSortMode.None);
+            SimpleMonsterAI[] monsters = FindObjectsByType<SimpleMonsterAI>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             Transform closest = null;
             float closestDist = Mathf.Infinity;
 

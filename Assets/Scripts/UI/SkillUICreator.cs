@@ -17,7 +17,7 @@ namespace ArcadiaOnline.UI
         private void CreateSkillUI()
         {
             // Cari Canvas
-            Canvas canvas = FindFirstObjectByType<Canvas>();
+            Canvas canvas = FindAnyObjectByType<Canvas>();
             if (canvas == null)
             {
                 GameObject canvasObj = new GameObject("Canvas");
