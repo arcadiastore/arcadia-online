@@ -33,7 +33,7 @@ namespace ArcadiaOnline.Quest
 
         // State
         private QuestData selectedQuest;
-        private int currentTab = 0;
+        private int currentTab = 1; // Default: Available
         private bool isPanelActive = false;
 
         void Awake()
