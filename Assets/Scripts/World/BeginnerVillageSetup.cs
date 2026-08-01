@@ -245,7 +245,17 @@ namespace ArcadiaOnline.World
                 );
 
                 GameObject slime = CreateMonster("Slime", pos, Color.green, 1);
-                slime.tag = "Enemy";
+
+                // Try to set tag, fallback to "Untagged" if not defined
+                try
+                {
+                    slime.tag = "Enemy";
+                }
+                catch
+                {
+                    slime.tag = "Untagged";
+                    Debug.LogWarning("[BeginnerVillage] Tag 'Enemy' not defined. Add it in Project Settings → Tags");
+                }
             }
 
             if (showDebug)
@@ -269,7 +279,16 @@ namespace ArcadiaOnline.World
                 );
 
                 GameObject wolf = CreateMonster("Wolf", pos, Color.gray, 3);
-                wolf.tag = "Enemy";
+
+                // Try to set tag
+                try
+                {
+                    wolf.tag = "Enemy";
+                }
+                catch
+                {
+                    wolf.tag = "Untagged";
+                }
             }
 
             if (showDebug)
@@ -285,8 +304,17 @@ namespace ArcadiaOnline.World
         {
             Vector3 pos = new Vector3(-80, 0.5f, -20);
             GameObject alphaWolf = CreateMonster("AlphaWolf", pos, Color.black, 5);
-            alphaWolf.tag = "Enemy";
             alphaWolf.transform.localScale = Vector3.one * 2f; // Bigger
+
+            // Try to set tag
+            try
+            {
+                alphaWolf.tag = "Enemy";
+            }
+            catch
+            {
+                alphaWolf.tag = "Untagged";
+            }
 
             if (showDebug)
             {
