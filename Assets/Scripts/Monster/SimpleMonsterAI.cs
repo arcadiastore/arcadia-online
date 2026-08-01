@@ -226,7 +226,7 @@ namespace ArcadiaOnline.Monster
             // Ambil damage dari player (default 15 jika tidak ada PlayerStats)
             float rawDamage = 15f;
             PlayerStats playerStats = player.GetComponent<PlayerStats>();
-            if (playerStats != null && playerStats.BaseStats != null)
+            if (playerStats != null)
             {
                 rawDamage = playerStats.BaseStats.atk;
             }
