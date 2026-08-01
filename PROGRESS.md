@@ -9,7 +9,7 @@
 | Fase | Status | Progress |
 |------|--------|----------|
 | Fase 0: Dokumentasi | ✅ SELESAI | 100% |
-| Fase 1: Prototipe | 🔄 DALAM PROSES | 30% |
+| Fase 1: Prototipe | 🔄 DALAM PROSES | 50% |
 | Fase 2: Vertical Slice | ⏳ BELUM MULAI | 0% |
 
 ---
@@ -72,13 +72,14 @@
 - [x] Assets/Plugins/
 
 ### Setup Unity (Dilakukan User)
-- [ ] Install Unity 6 LTS
-- [ ] Buat project 3D (URP)
-- [ ] Import scripts dari repo
-- [ ] Setup scene: Player, Camera, Ground, GameManager
-- [ ] Test: Player bergerak WASD
-- [ ] Test: Camera follow + mouse rotate
-- [ ] Test: Sprint + stamina
+- [x] Install Unity 6 LTS (6000.5.6f1)
+- [x] Buka project dari GitHub
+- [x] Fix package issues (hapus Cinemachine, Burst)
+- [x] Setup URP (Universal Render Pipeline)
+- [x] Setup scene: Player, Camera, Ground, GameManager
+- [x] Test: Player bergerak WASD (camera-relative)
+- [x] Test: Camera follow + mouse rotate
+- [x] Test: Sprint + stamina
 - [ ] Test: HP/MP bar di UI
 
 ### Belum Dibuat (Next Steps)
@@ -102,11 +103,19 @@
 
 ## Catatan Perubahan
 
-### 2026-08-01
+### 2026-08-01 (Update 2)
+- **Unity setup selesai** — Unity 6 LTS (6000.5.6f1) ter-install & jalan
+- **URP aktif** — Universal Render Pipeline ter-install
+- **Package cleanup** — Hapus Cinemachine, Burst (broke compatibility)
+- **Input System aktif** — Both mode (lama + baru)
+- **Scene test jalan** — Player bergerak WASD, Camera follow mouse
+- **SimplePlayerController** — Camera-relative movement working
+- **Fase 1 progress**: 50%
+
+### 2026-08-01 (Awal)
 - **Dokumentasi V1.0 selesai** — 95+ dokumen terpush ke GitHub
 - **Unity project starter dibuat** — 33 scripts terpush ke GitHub
-- **2 repository terpisah**: Docs + Unity
-- **Fase 1 progress**: Script dasar selesai, perlu setup di Unity Editor
+- **1 repository gabungan**: arcadia-online (docs + Unity)
 
 ### Langkah Selanjutnya
 1. User install Unity 6 LTS di PC
