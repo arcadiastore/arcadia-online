@@ -16,6 +16,9 @@ namespace ArcadiaOnline.VFX
             GameObject effect = new GameObject("HitEffect");
             ParticleSystem ps = effect.AddComponent<ParticleSystem>();
 
+            // Stop dulu sebelum set properties
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             var main = ps.main;
             main.duration = 0.3f;
             main.startLifetime = 0.3f;
@@ -64,6 +67,9 @@ namespace ArcadiaOnline.VFX
         {
             GameObject effect = new GameObject("DeathEffect");
             ParticleSystem ps = effect.AddComponent<ParticleSystem>();
+
+            // Stop dulu sebelum set properties
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
             main.duration = 0.5f;
@@ -117,6 +123,9 @@ namespace ArcadiaOnline.VFX
             GameObject effect = new GameObject("SkillEffect");
             ParticleSystem ps = effect.AddComponent<ParticleSystem>();
 
+            // Stop dulu sebelum set properties
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             var main = ps.main;
             main.duration = 0.5f;
             main.startLifetime = 0.8f;
@@ -164,6 +173,9 @@ namespace ArcadiaOnline.VFX
         {
             GameObject effect = new GameObject("HealEffect");
             ParticleSystem ps = effect.AddComponent<ParticleSystem>();
+
+            // Stop dulu sebelum set properties
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
             main.duration = 0.5f;
@@ -216,6 +228,9 @@ namespace ArcadiaOnline.VFX
         {
             GameObject effect = new GameObject("LevelUpEffect");
             ParticleSystem ps = effect.AddComponent<ParticleSystem>();
+
+            // Stop dulu sebelum set properties
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
             main.duration = 1f;
