@@ -55,28 +55,48 @@ namespace ArcadiaOnline.Player
             // Input menggunakan Input Manager (lama)
             float horizontal = Input.GetAxisRaw("Horizontal"); // A/D
             float vertical = Input.GetAxisRaw("Vertical");     // W/S
-            Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+            Vector3 inputDir = new Vector3(horizontal, 0f, vertical).normalized;
 
             // Cek sprint
             bool wantsToRun = Input.GetKey(KeyCode.LeftShift);
-            isRunning = wantsToRun && currentStamina > 0 && direction.magnitude > 0.1f;
+            isRunning = wantsToRun && currentStamina > 0 && inputDir.magnitude > 0.1f;
 
             float speed = isRunning ? runSpeed : walkSpeed;
 
-            if (direction.magnitude >= 0.1f)
+            if (inputDir.magnitude >= 0.1f)
             {
-                // Rotasi ke arah gerakan
-                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-                float smoothedAngle = Mathf.LerpAngle(
-                    transform.eulerAngles.y,
-                    targetAngle,
-                    rotationSpeed * Time.deltaTime
-                );
-                transform.rotation = Quaternion.Euler(0f, smoothedAngle, 0f);
+                // Gerak RELATIF terhadap arah kamera
+                Camera cam = Camera.main;
+                if (cam != null)
+                {
+                    Vector3 camForward = cam.transform.forward;
+                    Vector3 camRight = cam.transform.right;
+                    camForward.y = 0f;
+                    camRight.y = 0f;
+                    camForward.Normalize();
+                    camRight.Normalize();
 
-                // Gerakkan karakter
-                Vector3 move = transform.forward * speed;
-                controller.Move(move * Time.deltaTime);
+                    // Hitung arah gerak berdasarkan kamera
+                    Vector3 moveDir = camForward * inputDir.z + camRight * inputDir.x;
+
+                    // Rotasi ke arah gerakan
+                    float targetAngle = Mathf.Atan2(moveDir.x, moveDir.z) * Mathf.Rad2Deg;
+                    float smoothedAngle = Mathf.LerpAngle(
+                        transform.eulerAngles.y,
+                        targetAngle,
+                        rotationSpeed * Time.deltaTime
+                    );
+                    transform.rotation = Quaternion.Euler(0f, smoothedAngle, 0f);
+
+                    // Gerakkan karakter
+                    controller.Move(moveDir * speed * Time.deltaTime);
+                }
+                else
+                {
+                    // Fallback: gerak world space
+                    Vector3 move = transform.forward * speed;
+                    controller.Move(move * Time.deltaTime);
+                }
             }
         }
 
