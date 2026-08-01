@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using ArcadiaOnline.Player;
 
 namespace ArcadiaOnline.Dialogue
 {
@@ -34,6 +33,9 @@ namespace ArcadiaOnline.Dialogue
         private bool isTyping;
         private string fullText;
 
+        // Player reference
+        private MonoBehaviour playerController;
+
         // Events
         public System.Action<string> OnDialogueEvent;
         public System.Action OnDialogueEnd;
@@ -56,6 +58,22 @@ namespace ArcadiaOnline.Dialogue
             if (continueButton != null)
             {
                 continueButton.onClick.AddListener(OnContinueClicked);
+            }
+
+            // Find player controller (any script with "PlayerController" in name)
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                // Try to find player controller
+                MonoBehaviour[] scripts = player.GetComponents<MonoBehaviour>();
+                foreach (MonoBehaviour script in scripts)
+                {
+                    if (script.GetType().Name.Contains("PlayerController"))
+                    {
+                        playerController = script;
+                        break;
+                    }
+                }
             }
 
             // Hide dialogue panel
@@ -87,24 +105,14 @@ namespace ArcadiaOnline.Dialogue
         {
             if (dialogue == null) return;
 
-            // Cek level requirement
-            if (LevelUpSystem.Instance != null)
-            {
-                if (LevelUpSystem.Instance.CurrentLevel < dialogue.requiredLevel)
-                {
-                    Debug.Log($"[Dialogue] Level terlalu rendah! Butuh Lv.{dialogue.requiredLevel}");
-                    return;
-                }
-            }
-
             currentDialogue = dialogue;
             currentLineIndex = 0;
             isDialogueActive = true;
 
             // Disable player movement
-            if (SimplePlayerController.Instance != null)
+            if (playerController != null)
             {
-                SimplePlayerController.Instance.enabled = false;
+                playerController.enabled = false;
             }
 
             // Show first line
@@ -323,9 +331,9 @@ namespace ArcadiaOnline.Dialogue
             currentLineIndex = 0;
 
             // Enable player movement
-            if (SimplePlayerController.Instance != null)
+            if (playerController != null)
             {
-                SimplePlayerController.Instance.enabled = true;
+                playerController.enabled = true;
             }
 
             // Hide dialogue panel

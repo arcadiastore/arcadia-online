@@ -72,8 +72,9 @@ namespace ArcadiaOnline.Dialogue
             portraitBg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
 
             // Portrait Image
-            portraitImage = CreateImage(portraitPanel.transform, "Portrait",
+            GameObject portraitObj = CreateImage(portraitPanel.transform, "Portrait",
                 Color.white);
+            portraitImage = portraitObj.GetComponent<Image>();
 
             // Create Text Panel
             GameObject textPanel = CreatePanel(dialoguePanel.transform, "TextPanel",
@@ -147,7 +148,7 @@ namespace ArcadiaOnline.Dialogue
             return panel;
         }
 
-        private Text CreateText(Transform parent, string name, string text,
+        private GameObject CreateText(Transform parent, string name, string text,
             int fontSize, TextAnchor alignment, Color color)
         {
             GameObject textObj = new GameObject(name);
@@ -169,7 +170,7 @@ namespace ArcadiaOnline.Dialogue
             return textObj;
         }
 
-        private Image CreateImage(Transform parent, string name, Color color)
+        private GameObject CreateImage(Transform parent, string name, Color color)
         {
             GameObject imageObj = new GameObject(name);
             imageObj.transform.SetParent(parent, false);
@@ -183,7 +184,7 @@ namespace ArcadiaOnline.Dialogue
             Image image = imageObj.AddComponent<Image>();
             image.color = color;
 
-            return image;
+            return imageObj;
         }
 
         private GameObject CreateButton(Transform parent, string name, string text,
