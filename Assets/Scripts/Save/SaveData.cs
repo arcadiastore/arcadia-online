@@ -1,91 +1,121 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 
 namespace ArcadiaOnline.Save
 {
-    /// <summary>Lihat docs/02_TDD/SaveArchitecture.md.</summary>
-    [Serializable]
+    /// <summary>
+    /// Data yang di-save.
+    /// </summary>
+    [System.Serializable]
     public class SaveData
     {
+        // Player Info
+        public string playerName = "Hero";
+        public int playerLevel = 1;
+        public int playerEXP = 0;
+
+        // Player Stats
+        public int currentHP = 100;
+        public int maxHP = 100;
+        public int currentMP = 50;
+        public int maxMP = 50;
+        public int currentStamina = 100;
+        public int maxStamina = 100;
+
+        // Player Attributes
+        public int str = 10;
+        public int agi = 10;
+        public int vit = 10;
+        public int intel = 10;
+        public int luk = 10;
+
+        // Position
+        public float posX = 0f;
+        public float posY = 0f;
+        public float posZ = 0f;
+
+        // Gold
+        public int gold = 0;
+
+        // Equipment
+        public List<EquipmentSaveData> equippedItems = new List<EquipmentSaveData>();
+
+        // Inventory
+        public List<InventorySaveData> inventoryItems = new List<InventorySaveData>();
+
+        // Skills
+        public List<SkillSaveData> learnedSkills = new List<SkillSaveData>();
+
+        // Quests
+        public List<QuestSaveData> activeQuests = new List<QuestSaveData>();
+        public List<string> completedQuests = new List<string>();
+
+        // Game State
+        public string currentMap = "Beginner Village";
+        public int playTimeSeconds = 0;
+
+        // Meta
         public string saveDate;
-        public float playTime;
-        public string gameVersion;
-        public string checksum;
-
-        public PlayerSaveData player;
-        public List<CompanionSaveData> companions = new List<CompanionSaveData>();
-        public WorldSaveData world;
-        public QuestSaveData quests;
-        public InventorySaveData inventory;
+        public string saveVersion = "1.0";
     }
 
-    [Serializable]
-    public class PlayerSaveData
+    /// <summary>
+    /// Equipment data untuk save.
+    /// </summary>
+    [System.Serializable]
+    public class EquipmentSaveData
     {
-        public string playerName;
-        public int level;
-        public string jobId;
-        public float currentHP;
-        public float currentMP;
-        public float exp;
-        public float[] position = new float[3];
-        public string currentScene;
-        public List<string> unlockedSkills = new List<string>();
+        public string slotName;
+        public string itemID;
+        public string itemName;
+        public int enhancementLevel;
     }
 
-    [Serializable]
-    public class CompanionSaveData
-    {
-        public string companionId;
-        public int level;
-        public bool isRecruited;
-    }
-
-    [Serializable]
-    public class WorldSaveData
-    {
-        public List<WorldStateEntry> worldStates = new List<WorldStateEntry>();
-        public List<ReputationEntry> reputation = new List<ReputationEntry>();
-        public int dayCount;
-        public string weather;
-        public string timeOfDay;
-    }
-
-    // Unity JsonUtility tidak mendukung Dictionary secara native,
-    // jadi WorldState/Reputation disimpan sebagai list of entry.
-    [Serializable]
-    public class WorldStateEntry
-    {
-        public string key;
-        public bool value;
-    }
-
-    [Serializable]
-    public class ReputationEntry
-    {
-        public string factionId;
-        public int value;
-    }
-
-    [Serializable]
-    public class QuestSaveData
-    {
-        public List<string> activeQuestIds = new List<string>();
-        public List<string> completedQuestIds = new List<string>();
-        public List<string> failedQuestIds = new List<string>();
-    }
-
-    [Serializable]
+    /// <summary>
+    /// Inventory data untuk save.
+    /// </summary>
+    [System.Serializable]
     public class InventorySaveData
     {
-        public List<ItemSaveEntry> items = new List<ItemSaveEntry>();
-        public int gold;
+        public string itemID;
+        public string itemName;
+        public int quantity;
+        public int slotIndex;
     }
 
-    [Serializable]
-    public class ItemSaveEntry
+    /// <summary>
+    /// Skill data untuk save.
+    /// </summary>
+    [System.Serializable]
+    public class SkillSaveData
     {
-        public string itemId;
-        public int quantity;
+        public string skillID;
+        public string skillName;
+        public int level;
+        public float cooldownRemaining;
+    }
+
+    /// <summary>
+    /// Quest data untuk save.
+    /// </summary>
+    [System.Serializable]
+    public class QuestSaveData
+    {
+        public string questID;
+        public string questName;
+        public List<ObjectiveSaveData> objectives = new List<ObjectiveSaveData>();
+    }
+
+    /// <summary>
+    /// Quest objective data untuk save.
+    /// </summary>
+    [System.Serializable]
+    public class ObjectiveSaveData
+    {
+        public string description;
+        public int currentAmount;
+        public int requiredAmount;
+        public bool isCompleted;
     }
 }
