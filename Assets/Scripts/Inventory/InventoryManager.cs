@@ -185,9 +185,13 @@ namespace ArcadiaOnline.Inventory
             {
                 return UseConsumable(consumable, slotIndex);
             }
-            else if (item is EquipmentData equipment)
+            else if (item.GetType() == typeof(EquipmentData) || item is EquipmentData)
             {
-                return EquipItem(equipment, slotIndex);
+                EquipmentData equipment = item as EquipmentData;
+                if (equipment != null)
+                {
+                    return EquipItem(equipment, slotIndex);
+                }
             }
 
             Debug.LogWarning($"[Inventory] Cannot use {item.itemName}");

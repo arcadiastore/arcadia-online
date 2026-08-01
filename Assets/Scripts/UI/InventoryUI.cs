@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using ArcadiaOnline.Equipment;
 
 namespace ArcadiaOnline.Inventory
 {

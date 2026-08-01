@@ -191,52 +191,77 @@ namespace ArcadiaOnline.UI
         /// </summary>
         private void UpdateHUD()
         {
-            if (playerStats == null) return;
-
-            // Update HP
-            if (hpBar != null)
-            {
-                hpBar.value = playerStats.HPPercent;
-            }
-            if (hpText != null)
-            {
-                hpText.text = $"HP: {Mathf.Ceil(playerStats.CurrentHP)}/{Mathf.Ceil(playerStats.MaxHP)}";
-            }
-
-            // Update MP
-            if (mpBar != null)
-            {
-                mpBar.value = playerStats.MPPercent;
-            }
-            if (mpText != null)
-            {
-                mpText.text = $"MP: {Mathf.Ceil(playerStats.CurrentMP)}/{Mathf.Ceil(playerStats.MaxMP)}";
-            }
-
-            // Update Stamina
-            if (staminaBar != null)
-            {
-                staminaBar.value = playerStats.StaminaPercent;
-            }
-            if (staminaText != null)
-            {
-                staminaText.text = $"SP: {Mathf.Ceil(playerStats.CurrentStamina)}/{Mathf.Ceil(playerStats.MaxStamina)}";
-            }
-
-            // Update Level & EXP
+            // Update dari LevelUpSystem (primary)
             if (levelUpSystem != null)
             {
+                // Update HP
+                if (hpBar != null)
+                {
+                    hpBar.value = levelUpSystem.MaxHP > 0 ? levelUpSystem.CurrentHP / levelUpSystem.MaxHP : 0;
+                }
+                if (hpText != null)
+                {
+                    hpText.text = $"HP: {Mathf.Ceil(levelUpSystem.CurrentHP)}/{Mathf.Ceil(levelUpSystem.MaxHP)}";
+                }
+
+                // Update MP
+                if (mpBar != null)
+                {
+                    mpBar.value = levelUpSystem.MaxMP > 0 ? levelUpSystem.CurrentMP / levelUpSystem.MaxMP : 0;
+                }
+                if (mpText != null)
+                {
+                    mpText.text = $"MP: {Mathf.Ceil(levelUpSystem.CurrentMP)}/{Mathf.Ceil(levelUpSystem.MaxMP)}";
+                }
+
+                // Update Level & EXP
                 if (levelText != null)
                 {
                     levelText.text = $"Lv. {levelUpSystem.CurrentLevel}";
                 }
                 if (expBar != null)
                 {
-                    expBar.value = levelUpSystem.EXPPercent;
+                    expBar.value = levelUpSystem.ExpToNextLevel > 0 ? (float)levelUpSystem.CurrentEXP / levelUpSystem.ExpToNextLevel : 0;
                 }
                 if (expText != null)
                 {
-                    expText.text = $"EXP: {levelUpSystem.CurrentEXP}/{levelUpSystem.EXPToNextLevel}";
+                    expText.text = $"EXP: {levelUpSystem.CurrentEXP}/{levelUpSystem.ExpToNextLevel}";
+                }
+            }
+            // Fallback ke PlayerStats
+            else if (playerStats != null)
+            {
+                // Update HP
+                if (hpBar != null)
+                {
+                    hpBar.value = playerStats.MaxHP > 0 ? playerStats.CurrentHP / playerStats.MaxHP : 0;
+                }
+                if (hpText != null)
+                {
+                    hpText.text = $"HP: {Mathf.Ceil(playerStats.CurrentHP)}/{Mathf.Ceil(playerStats.MaxHP)}";
+                }
+
+                // Update MP
+                if (mpBar != null)
+                {
+                    mpBar.value = playerStats.MaxMP > 0 ? playerStats.CurrentMP / playerStats.MaxMP : 0;
+                }
+                if (mpText != null)
+                {
+                    mpText.text = $"MP: {Mathf.Ceil(playerStats.CurrentMP)}/{Mathf.Ceil(playerStats.MaxMP)}";
+                }
+            }
+
+            // Update Stamina (dari PlayerStats)
+            if (playerStats != null)
+            {
+                if (staminaBar != null)
+                {
+                    staminaBar.value = PlayerStats.MAX_STAMINA > 0 ? playerStats.Stamina / PlayerStats.MAX_STAMINA : 0;
+                }
+                if (staminaText != null)
+                {
+                    staminaText.text = $"SP: {Mathf.Ceil(playerStats.Stamina)}/{PlayerStats.MAX_STAMINA}";
                 }
             }
         }

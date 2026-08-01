@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using ArcadiaOnline.Equipment;
 
 namespace ArcadiaOnline.Inventory
 {

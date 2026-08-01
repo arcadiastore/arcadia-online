@@ -121,9 +121,9 @@ namespace ArcadiaOnline.Inventory
             item.isDroppable = true;
             item.atkBuff = atkBuff;
             item.defBuff = defBuff;
-            item.spdBonus = spdBuff;
-            item.critRateBonus = critRateBuff;
-            item.critDmgBonus = critDmgBuff;
+            item.spdBuff = spdBuff;
+            item.critRateBuff = critRateBuff;
+            item.critDmgBuff = critDmgBuff;
 
             AssetDatabase.CreateAsset(item, path);
         }
