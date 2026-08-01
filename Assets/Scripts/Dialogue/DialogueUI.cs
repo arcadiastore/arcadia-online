@@ -42,6 +42,12 @@ namespace ArcadiaOnline.Dialogue
             {
                 CreateDialogueUI();
             }
+
+            // Hide dialogue panel by default
+            if (dialoguePanel != null)
+            {
+                dialoguePanel.SetActive(false);
+            }
         }
 
         /// <summary>
