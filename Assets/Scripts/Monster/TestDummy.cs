@@ -1,5 +1,6 @@
 using UnityEngine;
 using ArcadiaOnline.Managers;
+using ArcadiaOnline.VFX;
 
 namespace ArcadiaOnline.Monster
 {
@@ -89,6 +90,9 @@ namespace ArcadiaOnline.Monster
             HitFlash();
             SpawnDamagePopup(damage);
 
+            // Spawn hit effect
+            SimpleVFXCreator.CreateHitEffect().transform.position = transform.position + Vector3.up;
+
             // Play hit sound (dari player)
             if (JobSFXManager.Instance != null)
             {
@@ -157,6 +161,9 @@ namespace ArcadiaOnline.Monster
             {
                 JobSFXManager.Instance.PlayDeath("male"); // Default male, nanti sesuaikan
             }
+
+            // Spawn death effect
+            SimpleVFXCreator.CreateDeathEffect().transform.position = transform.position;
 
             // Exit battle - kembali ke map BGM
             if (BattleBGMManager.Instance != null)
