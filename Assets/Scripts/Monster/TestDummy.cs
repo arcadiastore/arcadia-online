@@ -110,6 +110,28 @@ namespace ArcadiaOnline.Monster
         {
             // Simple debug output - nanti di-upgrade jadi world space UI
             Debug.Log($"[DamagePopup] {damage}");
+
+            // Shake effect saat kena damage
+            StartCoroutine(HitShake());
+        }
+
+        private System.Collections.IEnumerator HitShake()
+        {
+            Vector3 originalPos = transform.position;
+            float duration = 0.2f;
+            float magnitude = 0.1f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                float x = Random.Range(-magnitude, magnitude);
+                float z = Random.Range(-magnitude, magnitude);
+                transform.position = originalPos + new Vector3(x, 0, z);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            transform.position = originalPos;
         }
 
         private void Die()
@@ -124,24 +146,39 @@ namespace ArcadiaOnline.Monster
                 collider.enabled = false;
             }
 
-            // Visual: make semi-transparent
-            if (meshRenderer != null)
+            // Efek mati: scale down ke 0
+            StartCoroutine(DeathEffect());
+        }
+
+        private System.Collections.IEnumerator DeathEffect()
+        {
+            float duration = 0.5f;
+            float elapsed = 0f;
+            Vector3 startScale = transform.localScale;
+            Vector3 startPos = transform.position;
+
+            // Turun ke bawah sambil mengecil
+            while (elapsed < duration)
             {
-                try
-                {
-                    Color c = meshRenderer.material.color;
-                    c.a = 0.3f;
-                    meshRenderer.material.color = c;
-                }
-                catch
-                {
-                    // Material tidak support _Color
-                }
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+
+                // Scale down
+                transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
+
+                // Turun sedikit
+                transform.position = Vector3.Lerp(startPos, startPos + Vector3.down * 0.5f, t);
+
+                yield return null;
             }
+
+            // Sembunyikan
+            gameObject.SetActive(false);
 
             if (respawn)
             {
-                Invoke(nameof(Respawn), respawnTime);
+                yield return new WaitForSeconds(respawnTime);
+                Respawn();
             }
         }
 
@@ -150,28 +187,18 @@ namespace ArcadiaOnline.Monster
             currentHP = maxHP;
             isDead = false;
 
-            // Reset position
+            // Reset position & scale
             transform.position = originalPosition;
+            transform.localScale = Vector3.one * 2f; // Scale awal monster
+
+            // Tampilkan kembali
+            gameObject.SetActive(true);
 
             // Re-enable collider
             var collider = GetComponent<Collider>();
             if (collider != null)
             {
                 collider.enabled = true;
-            }
-
-            // Reset visual
-            if (meshRenderer != null)
-            {
-                try
-                {
-                    normalColor.a = 1f;
-                    meshRenderer.material.color = normalColor;
-                }
-                catch
-                {
-                    // Material tidak support _Color
-                }
             }
 
             Debug.Log("[Dummy] Respawn!");
