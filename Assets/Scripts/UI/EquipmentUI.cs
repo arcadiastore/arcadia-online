@@ -208,7 +208,7 @@ namespace ArcadiaOnline.Equipment
             statsText.text = stats;
 
             // Update player name & level
-            Player.LevelUpSystem levelUp = FindObjectOfType<Player.LevelUpSystem>();
+            Player.LevelUpSystem levelUp = FindAnyObjectByType<Player.LevelUpSystem>();
             if (levelUp != null)
             {
                 if (playerNameText != null)

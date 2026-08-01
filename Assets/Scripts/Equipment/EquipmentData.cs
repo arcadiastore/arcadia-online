@@ -118,6 +118,28 @@ namespace ArcadiaOnline.Equipment
         }
 
         /// <summary>
+        /// Get rarity display name.
+        /// </summary>
+        public string GetRarityName()
+        {
+            switch (rarity)
+            {
+                case EquipmentRarity.Common:
+                    return "Common";
+                case EquipmentRarity.Uncommon:
+                    return "Uncommon";
+                case EquipmentRarity.Rare:
+                    return "Rare";
+                case EquipmentRarity.Epic:
+                    return "Epic";
+                case EquipmentRarity.Legendary:
+                    return "Legendary";
+                default:
+                    return "Unknown";
+            }
+        }
+
+        /// <summary>
         /// Get slot display name.
         /// </summary>
         public string GetSlotName()

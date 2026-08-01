@@ -210,7 +210,7 @@ namespace ArcadiaOnline.UI
         /// </summary>
         private Transform FindClosestMonster()
         {
-            SimpleMonsterAI[] monsters = FindObjectsByType<SimpleMonsterAI>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            SimpleMonsterAI[] monsters = FindObjectsByType<SimpleMonsterAI>(FindObjectsInactive.Exclude);
             Transform closest = null;
             float closestDist = Mathf.Infinity;
 
