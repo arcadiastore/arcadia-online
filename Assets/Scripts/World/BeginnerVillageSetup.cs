@@ -15,10 +15,10 @@ namespace ArcadiaOnline.World
         [SerializeField] private bool autoCreateOnStart = true;
         [SerializeField] private bool showDebug = true;
 
-        // Positions (3x bigger map)
+        // Positions (2x bigger map - more walkable)
         private Vector3 villageCenter = Vector3.zero;
-        private Vector3 trainingGround = new Vector3(180, 0, 0);
-        private Vector3 forestEntrance = new Vector3(-180, 0, 0);
+        private Vector3 trainingGround = new Vector3(100, 0, 0);
+        private Vector3 forestEntrance = new Vector3(-100, 0, 0);
 
         // Parents
         private Transform envParent;
@@ -42,21 +42,21 @@ namespace ArcadiaOnline.World
             monsterParent = new GameObject("Monsters").transform;
 
             // Ground
-            MakeGround("OuterGrass", Vector3.zero, new Vector3(600, 0.05f, 600), new Color(0.35f, 0.55f, 0.30f));
-            MakeGround("VillagePlaza", villageCenter, new Vector3(160, 0.10f, 160), new Color(0.55f, 0.45f, 0.35f));
-            MakeGround("TrainingArea", trainingGround, new Vector3(100, 0.10f, 100), new Color(0.65f, 0.55f, 0.40f));
-            MakeGround("ForestFloor", forestEntrance, new Vector3(140, 0.10f, 140), new Color(0.25f, 0.40f, 0.25f));
+            MakeGround("OuterGrass", Vector3.zero, new Vector3(400, 0.05f, 400), new Color(0.35f, 0.55f, 0.30f));
+            MakeGround("VillagePlaza", villageCenter, new Vector3(120, 0.10f, 120), new Color(0.55f, 0.45f, 0.35f));
+            MakeGround("TrainingArea", trainingGround, new Vector3(80, 0.10f, 80), new Color(0.65f, 0.55f, 0.40f));
+            MakeGround("ForestFloor", forestEntrance, new Vector3(100, 0.10f, 100), new Color(0.25f, 0.40f, 0.25f));
 
             // Roads
-            MakeRoad(villageCenter + new Vector3(80, 0.12f, 0), new Vector3(140, 0.12f, 10));
-            MakeRoad(villageCenter + new Vector3(-80, 0.12f, 0), new Vector3(140, 0.12f, 10));
-            MakeRoad(villageCenter, new Vector3(10, 0.12f, 140));
-            MakeRoad(villageCenter, new Vector3(140, 0.12f, 10));
+            MakeRoad(villageCenter + new Vector3(50, 0.12f, 0), new Vector3(80, 0.12f, 10));
+            MakeRoad(villageCenter + new Vector3(-50, 0.12f, 0), new Vector3(80, 0.12f, 10));
+            MakeRoad(villageCenter, new Vector3(10, 0.12f, 100));
+            MakeRoad(villageCenter, new Vector3(100, 0.12f, 10));
             // Ring road
-            MakeRoad(villageCenter + new Vector3(0, 0.12f, 50), new Vector3(100, 0.12f, 6));
-            MakeRoad(villageCenter + new Vector3(0, 0.12f, -50), new Vector3(100, 0.12f, 6));
-            MakeRoad(villageCenter + new Vector3(50, 0.12f, 0), new Vector3(6, 0.12f, 100));
-            MakeRoad(villageCenter + new Vector3(-50, 0.12f, 0), new Vector3(6, 0.12f, 100));
+            MakeRoad(villageCenter + new Vector3(0, 0.12f, 35), new Vector3(70, 0.12f, 6));
+            MakeRoad(villageCenter + new Vector3(0, 0.12f, -35), new Vector3(70, 0.12f, 6));
+            MakeRoad(villageCenter + new Vector3(35, 0.12f, 0), new Vector3(6, 0.12f, 70));
+            MakeRoad(villageCenter + new Vector3(-35, 0.12f, 0), new Vector3(6, 0.12f, 70));
 
             // Major buildings (6)
             MakeBuilding("VillageHall", villageCenter + new Vector3(0, 0, -60), new Vector3(35, 18, 25), new Color(0.70f, 0.60f, 0.50f));
@@ -64,14 +64,14 @@ namespace ArcadiaOnline.World
             MakeBuilding("Warehouse", villageCenter + new Vector3(-45, 0, -40), new Vector3(28, 12, 20), new Color(0.50f, 0.50f, 0.50f));
             MakeBuilding("Temple", villageCenter + new Vector3(0, 0, 60), new Vector3(25, 22, 18), new Color(0.90f, 0.88f, 0.80f));
             MakeBuilding("TrainingHall", trainingGround + new Vector3(0, 0, -40), new Vector3(30, 12, 20), new Color(0.60f, 0.50f, 0.40f));
-            MakeBuilding("Watchtower", forestEntrance + new Vector3(-50, 0, -50), new Vector3(12, 25, 12), new Color(0.45f, 0.35f, 0.25f));
+            MakeBuilding("Watchtower", forestEntrance + new Vector3(-35, 0, -35), new Vector3(12, 25, 12), new Color(0.45f, 0.35f, 0.25f));
 
             // Houses (16)
             Vector3[] housePos = {
-                new Vector3(35,0,35), new Vector3(-35,0,35), new Vector3(55,0,15), new Vector3(-55,0,15),
-                new Vector3(55,0,-15), new Vector3(-55,0,-15), new Vector3(35,0,-35), new Vector3(-35,0,-35),
-                new Vector3(70,0,0), new Vector3(-70,0,0), new Vector3(0,0,70), new Vector3(0,0,-70),
-                new Vector3(70,0,40), new Vector3(-70,0,40), new Vector3(70,0,-40), new Vector3(-70,0,-40)
+                new Vector3(25,0,25), new Vector3(-25,0,25), new Vector3(40,0,10), new Vector3(-40,0,10),
+                new Vector3(40,0,-10), new Vector3(-40,0,-10), new Vector3(25,0,-25), new Vector3(-25,0,-25),
+                new Vector3(50,0,0), new Vector3(-50,0,0), new Vector3(0,0,50), new Vector3(0,0,-50),
+                new Vector3(50,0,30), new Vector3(-50,0,30), new Vector3(50,0,-30), new Vector3(-50,0,-30)
             };
             Color[] houseCol = {
                 new Color(.80f,.60f,.40f), new Color(.70f,.50f,.30f), new Color(.65f,.45f,.25f), new Color(.85f,.70f,.50f),
@@ -89,7 +89,7 @@ namespace ArcadiaOnline.World
             MakeBuilding("PotionShop", villageCenter + new Vector3(40, 0, 10), new Vector3(18, 11, 14), new Color(.6f,.3f,.6f));
 
             // Farm
-            MakeFarm(villageCenter + new Vector3(100, 0, -50));
+            MakeFarm(villageCenter + new Vector3(60, 0, -30));
 
             // Fountain
             MakeFountain();
@@ -104,24 +104,24 @@ namespace ArcadiaOnline.World
 
             // Lamp posts (20)
             Vector3[] lampPos = {
-                new Vector3(12,0,0), new Vector3(-12,0,0), new Vector3(0,0,12), new Vector3(0,0,-12),
-                new Vector3(25,0,0), new Vector3(-25,0,0), new Vector3(0,0,25), new Vector3(0,0,-25),
+                new Vector3(10,0,0), new Vector3(-10,0,0), new Vector3(0,0,10), new Vector3(0,0,-10),
+                new Vector3(20,0,0), new Vector3(-20,0,0), new Vector3(0,0,20), new Vector3(0,0,-20),
+                new Vector3(30,0,0), new Vector3(-30,0,0), new Vector3(0,0,30), new Vector3(0,0,-30),
                 new Vector3(40,0,0), new Vector3(-40,0,0), new Vector3(0,0,40), new Vector3(0,0,-40),
-                new Vector3(60,0,0), new Vector3(-60,0,0), new Vector3(0,0,60), new Vector3(0,0,-60),
-                new Vector3(35,0,35), new Vector3(-35,0,35), new Vector3(35,0,-35), new Vector3(-35,0,-35)
+                new Vector3(25,0,25), new Vector3(-25,0,25), new Vector3(25,0,-25), new Vector3(-25,0,-25)
             };
             foreach (var p in lampPos) MakeLampPost(villageCenter + p);
 
             // Fences
-            for (int a = 0; a < 360; a += 10)
+            for (int a = 0; a < 360; a += 12)
             {
                 float rad = a * Mathf.Deg2Rad;
-                MakeFence(villageCenter + new Vector3(Mathf.Cos(rad)*78, 0, Mathf.Sin(rad)*78), a);
+                MakeFence(villageCenter + new Vector3(Mathf.Cos(rad)*55, 0, Mathf.Sin(rad)*55), a);
             }
-            for (int i = -40; i <= 40; i += 8)
+            for (int i = -30; i <= 30; i += 8)
             {
-                MakeFence(trainingGround + new Vector3(i,0,-40), 0);
-                MakeFence(trainingGround + new Vector3(i,0,40), 0);
+                MakeFence(trainingGround + new Vector3(i,0,-30), 0);
+                MakeFence(trainingGround + new Vector3(i,0,30), 0);
             }
 
             // Market stalls (4)
@@ -130,30 +130,30 @@ namespace ArcadiaOnline.World
             MakeStall(villageCenter + new Vector3(30,0,-30), new Color(.8f,.8f,.2f));
             MakeStall(villageCenter + new Vector3(-30,0,-30), new Color(.2f,.8f,.8f));
 
-            // Trees (~120)
-            for (int i = 0; i < 70; i++)
-            {
-                Vector3 p = new Vector3(Random.Range(-250f,250f), 0, Random.Range(-250f,250f));
-                if (Vector3.Distance(p, villageCenter) > 50) MakeTree(p);
-            }
+            // Trees (~100)
             for (int i = 0; i < 50; i++)
-                MakeTree(forestEntrance + new Vector3(Random.Range(-65f,65f), 0, Random.Range(-65f,65f)));
-
-            // Flowers (60)
-            for (int i = 0; i < 60; i++)
-                MakeFlower(villageCenter + new Vector3(Random.Range(-70f,70f), 0.25f, Random.Range(-70f,70f)));
-
-            // Rocks (30)
-            for (int i = 0; i < 30; i++)
             {
-                Vector3 p = new Vector3(Random.Range(-200f,200f), 0, Random.Range(-200f,200f));
-                if (Vector3.Distance(p, villageCenter) > 40) MakeRock(p);
+                Vector3 p = new Vector3(Random.Range(-150f,150f), 0, Random.Range(-150f,150f));
+                if (Vector3.Distance(p, villageCenter) > 40) MakeTree(p);
+            }
+            for (int i = 0; i < 40; i++)
+                MakeTree(forestEntrance + new Vector3(Random.Range(-45f,45f), 0, Random.Range(-45f,45f)));
+
+            // Flowers (50)
+            for (int i = 0; i < 50; i++)
+                MakeFlower(villageCenter + new Vector3(Random.Range(-50f,50f), 0.25f, Random.Range(-50f,50f)));
+
+            // Rocks (25)
+            for (int i = 0; i < 25; i++)
+            {
+                Vector3 p = new Vector3(Random.Range(-130f,130f), 0, Random.Range(-130f,130f));
+                if (Vector3.Distance(p, villageCenter) > 35) MakeRock(p);
             }
 
             // Animals (16)
-            for (int i = 0; i < 8; i++) MakeAnimal("Chicken", villageCenter + new Vector3(Random.Range(-50f,50f),0.3f,Random.Range(-50f,50f)), Color.white, 0.4f);
-            for (int i = 0; i < 4; i++) MakeAnimal("Dog", villageCenter + new Vector3(Random.Range(-60f,60f),0.4f,Random.Range(-60f,60f)), new Color(.6f,.4f,.2f), 0.6f);
-            for (int i = 0; i < 4; i++) MakeAnimal("Cat", villageCenter + new Vector3(Random.Range(-60f,60f),0.3f,Random.Range(-60f,60f)), Color.gray, 0.3f);
+            for (int i = 0; i < 8; i++) MakeAnimal("Chicken", villageCenter + new Vector3(Random.Range(-35f,35f),0.3f,Random.Range(-35f,35f)), Color.white, 0.4f);
+            for (int i = 0; i < 4; i++) MakeAnimal("Dog", villageCenter + new Vector3(Random.Range(-40f,40f),0.4f,Random.Range(-40f,40f)), new Color(.6f,.4f,.2f), 0.6f);
+            for (int i = 0; i < 4; i++) MakeAnimal("Cat", villageCenter + new Vector3(Random.Range(-40f,40f),0.3f,Random.Range(-40f,40f)), Color.gray, 0.3f);
 
             // NPCs
             MakeNPC("VillageChief", villageCenter + new Vector3(15,0,15), Color.blue);
@@ -164,24 +164,24 @@ namespace ArcadiaOnline.World
             // Villagers (15)
             for (int i = 0; i < 15; i++)
             {
-                Vector3 p = villageCenter + new Vector3(Random.Range(-60f,60f), 0, Random.Range(-60f,60f));
+                Vector3 p = villageCenter + new Vector3(Random.Range(-40f,40f), 0, Random.Range(-40f,40f));
                 MakeNPC($"Villager_{i+1}", p, new Color(Random.Range(.5f,.9f), Random.Range(.5f,.9f), Random.Range(.5f,.9f)));
             }
 
             // Monsters
-            for (int i = 0; i < 10; i++) MakeMonster("Slime", trainingGround + new Vector3(Random.Range(-25f,25f),0.5f,Random.Range(-25f,25f)), Color.green, 1);
-            for (int i = 0; i < 6; i++) MakeMonster("Wolf", forestEntrance + new Vector3(Random.Range(-40f,40f),0.5f,Random.Range(-40f,40f)), Color.gray, 3);
-            MakeMonster("AlphaWolf", forestEntrance + new Vector3(-50,0.5f,-50), Color.black, 5);
+            for (int i = 0; i < 10; i++) MakeMonster("Slime", trainingGround + new Vector3(Random.Range(-20f,20f),0.5f,Random.Range(-20f,20f)), Color.green, 1);
+            for (int i = 0; i < 6; i++) MakeMonster("Wolf", forestEntrance + new Vector3(Random.Range(-30f,30f),0.5f,Random.Range(-30f,30f)), Color.gray, 3);
+            MakeMonster("AlphaWolf", forestEntrance + new Vector3(-35,0.5f,-35), Color.black, 5);
 
             // Warp points
-            MakeWarp(villageCenter + new Vector3(60,0,0), trainingGround + new Vector3(-20,0,0));
-            MakeWarp(villageCenter + new Vector3(-60,0,0), forestEntrance + new Vector3(20,0,0));
-            MakeWarp(trainingGround + new Vector3(-20,0,0), forestEntrance + new Vector3(20,0,0));
+            MakeWarp(villageCenter + new Vector3(40,0,0), trainingGround + new Vector3(-15,0,0));
+            MakeWarp(villageCenter + new Vector3(-40,0,0), forestEntrance + new Vector3(15,0,0));
+            MakeWarp(trainingGround + new Vector3(-15,0,0), forestEntrance + new Vector3(15,0,0));
             MakeWarp(forestEntrance + new Vector3(0,0,0), villageCenter);
 
             // Training dummies (5)
             for (int i = 0; i < 5; i++)
-                MakeTrainingDummy(trainingGround + new Vector3(Random.Range(-20f,20f),1,Random.Range(-20f,20f)));
+                MakeTrainingDummy(trainingGround + new Vector3(Random.Range(-15f,15f),1,Random.Range(-15f,15f)));
 
             if (showDebug) Debug.Log("[Village] === DONE: 200+ objects created ===");
         }
@@ -194,7 +194,7 @@ namespace ArcadiaOnline.World
             g.name = name; g.transform.SetParent(envParent);
             g.transform.position = pos; g.transform.localScale = scale;
             g.GetComponent<Renderer>().material.color = color;
-            Destroy(g.GetComponent<Collider>());
+            // KEEP collider so player doesn't fall through!
         }
 
         private void MakeRoad(Vector3 pos, Vector3 scale)
