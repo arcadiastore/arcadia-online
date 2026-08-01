@@ -79,16 +79,30 @@ namespace ArcadiaOnline.Monster
                 BattleBGMManager.Instance.EnterBattle();
             }
 
+            // Hitung critical (10% chance)
+            bool isCritical = Random.Range(0f, 1f) < 0.1f;
+            float critMultiplier = isCritical ? 1.5f : 1f;
+
             // Hitung damage dengan defense
             float damage = Mathf.Max(1, rawDamage - defense);
             damage *= Random.Range(0.9f, 1.1f); // Random ±10%
+            damage *= critMultiplier;
             damage = Mathf.Floor(damage);
 
             currentHP = Mathf.Max(0, currentHP - damage);
 
             // Visual feedback
             HitFlash();
-            SpawnDamagePopup(damage);
+            
+            // Spawn damage popup dengan warna sesuai critical
+            if (DamagePopupSpawner.Instance != null)
+            {
+                DamagePopupSpawner.Instance.SpawnDamagePopup(transform.position, damage, isCritical);
+            }
+            else
+            {
+                Debug.Log($"[DamagePopup] {damage} (Critical: {isCritical})");
+            }
 
             // Spawn hit effect
             SimpleVFXCreator.CreateHitEffect().transform.position = transform.position + Vector3.up;
@@ -96,10 +110,10 @@ namespace ArcadiaOnline.Monster
             // Play hit sound (dari player)
             if (JobSFXManager.Instance != null)
             {
-                JobSFXManager.Instance.PlayHit("male"); // Default male, nanti sesuaikan
+                JobSFXManager.Instance.PlayHit("male");
             }
 
-            Debug.Log($"[Dummy] Terkena {damage} damage! HP: {currentHP}/{maxHP}");
+            Debug.Log($"[Dummy] Terkena {damage} damage! (Critical: {isCritical}) HP: {currentHP}/{maxHP}");
 
             if (currentHP <= 0)
             {
