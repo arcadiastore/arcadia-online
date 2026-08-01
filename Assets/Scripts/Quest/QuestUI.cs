@@ -37,6 +37,7 @@ namespace ArcadiaOnline.Quest
         // State
         private QuestData selectedQuest;
         private int currentTab = 0; // 0=Active, 1=Available, 2=Completed
+        private bool isPanelActive = false;
 
         void Awake()
         {
@@ -70,10 +71,7 @@ namespace ArcadiaOnline.Quest
             SetupButtons();
 
             // Hide panel by default
-            if (questPanel != null)
-            {
-                questPanel.SetActive(false);
-            }
+            HidePanel();
         }
 
         void Update()
@@ -126,15 +124,38 @@ namespace ArcadiaOnline.Quest
         /// </summary>
         public void ToggleQuestPanel()
         {
+            if (isPanelActive)
+            {
+                HidePanel();
+            }
+            else
+            {
+                ShowPanel();
+            }
+        }
+
+        /// <summary>
+        /// Show quest panel.
+        /// </summary>
+        private void ShowPanel()
+        {
             if (questPanel != null)
             {
-                bool isActive = !questPanel.activeSelf;
-                questPanel.SetActive(isActive);
+                questPanel.SetActive(true);
+                isPanelActive = true;
+                RefreshQuestList();
+            }
+        }
 
-                if (isActive)
-                {
-                    RefreshQuestList();
-                }
+        /// <summary>
+        /// Hide quest panel.
+        /// </summary>
+        private void HidePanel()
+        {
+            if (questPanel != null)
+            {
+                questPanel.SetActive(false);
+                isPanelActive = false;
             }
         }
 
@@ -186,35 +207,110 @@ namespace ArcadiaOnline.Quest
 
             Debug.Log($"[QuestUI] Quests to display: {quests.Count}");
 
-            // Create quest items
-            if (questItemPrefab != null && questListParent != null)
+            // Create quest items directly
+            foreach (QuestData quest in quests)
             {
-                foreach (QuestData quest in quests)
-                {
-                    GameObject item = Instantiate(questItemPrefab, questListParent);
-                    QuestItemUI itemUI = item.GetComponent<QuestItemUI>();
-
-                    if (itemUI != null)
-                    {
-                        itemUI.Setup(quest);
-                    }
-
-                    // Add click listener
-                    Button button = item.GetComponent<Button>();
-                    if (button != null)
-                    {
-                        QuestData questRef = quest;
-                        button.onClick.AddListener(() => SelectQuest(questRef));
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[QuestUI] questItemPrefab: {questItemPrefab != null}, questListParent: {questListParent != null}");
+                CreateQuestItem(quest);
             }
 
             // Update tab button colors
             UpdateTabColors();
+        }
+
+        /// <summary>
+        /// Create quest item directly (no prefab).
+        /// </summary>
+        private void CreateQuestItem(QuestData quest)
+        {
+            if (questListParent == null) return;
+
+            // Create item
+            GameObject item = new GameObject("QuestItem_" + quest.questName);
+            item.transform.SetParent(questListParent, false);
+
+            RectTransform rect = item.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0, 0);
+            rect.anchorMax = new Vector2(1, 0);
+            rect.pivot = new Vector2(0.5f, 1);
+            rect.sizeDelta = new Vector2(0, 50);
+
+            Image bg = item.AddComponent<Image>();
+            bg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+
+            Button button = item.AddComponent<Button>();
+
+            // Quest Name Text
+            GameObject nameObj = new GameObject("QuestName");
+            nameObj.transform.SetParent(item.transform, false);
+
+            RectTransform nameRect = nameObj.AddComponent<RectTransform>();
+            nameRect.anchorMin = new Vector2(0, 0);
+            nameRect.anchorMax = new Vector2(1, 1);
+            nameRect.offsetMin = new Vector2(10, 0);
+            nameRect.offsetMax = new Vector2(-10, 0);
+
+            Text nameText = nameObj.AddComponent<Text>();
+            nameText.text = quest.questName;
+            nameText.fontSize = 14;
+            nameText.alignment = TextAnchor.MiddleLeft;
+            nameText.color = Color.white;
+            nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Level Text
+            GameObject levelObj = new GameObject("LevelText");
+            levelObj.transform.SetParent(item.transform, false);
+
+            RectTransform levelRect = levelObj.AddComponent<RectTransform>();
+            levelRect.anchorMin = new Vector2(0.7f, 0);
+            levelRect.anchorMax = new Vector2(1, 1);
+            levelRect.offsetMin = Vector2.zero;
+            levelRect.offsetMax = new Vector2(-10, 0);
+
+            Text levelText = levelObj.AddComponent<Text>();
+            levelText.text = $"Lv.{quest.recommendedLevel}";
+            levelText.fontSize = 12;
+            levelText.alignment = TextAnchor.MiddleRight;
+            levelText.color = Color.yellow;
+            levelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Status Icon
+            GameObject iconObj = new GameObject("StatusIcon");
+            iconObj.transform.SetParent(item.transform, false);
+
+            RectTransform iconRect = iconObj.AddComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0, 0.3f);
+            iconRect.anchorMax = new Vector2(0, 0.7f);
+            iconRect.offsetMin = new Vector2(5, 0);
+            iconRect.offsetMax = new Vector2(20, 0);
+
+            Image icon = iconObj.AddComponent<Image>();
+            icon.color = GetQuestStatusColor(quest);
+
+            // Add click listener
+            QuestData questRef = quest;
+            button.onClick.AddListener(() => SelectQuest(questRef));
+        }
+
+        /// <summary>
+        /// Get quest status color.
+        /// </summary>
+        private Color GetQuestStatusColor(QuestData quest)
+        {
+            if (QuestManager.Instance == null) return Color.gray;
+
+            QuestStatus status = QuestManager.Instance.GetQuestStatus(quest.questID);
+
+            switch (status)
+            {
+                case QuestStatus.Active:
+                    return Color.yellow;
+                case QuestStatus.Completed:
+                    return Color.green;
+                case QuestStatus.Available:
+                    return Color.white;
+                default:
+                    return Color.gray;
+            }
         }
 
         /// <summary>
@@ -426,9 +522,6 @@ namespace ArcadiaOnline.Quest
             layout.childForceExpandWidth = true;
             layout.childForceExpandHeight = false;
 
-            // Create quest item prefab (runtime)
-            CreateQuestItemPrefab();
-
             // Create detail panel
             CreateDetailPanel();
 
@@ -436,50 +529,6 @@ namespace ArcadiaOnline.Quest
             SetupButtons();
 
             Debug.Log("[QuestUI] Quest UI created!");
-        }
-
-        /// <summary>
-        /// Create quest item prefab at runtime.
-        /// </summary>
-        private void CreateQuestItemPrefab()
-        {
-            questItemPrefab = new GameObject("QuestItemPrefab");
-
-            RectTransform rect = questItemPrefab.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0, 0);
-            rect.anchorMax = new Vector2(1, 0);
-            rect.pivot = new Vector2(0.5f, 1);
-            rect.sizeDelta = new Vector2(0, 50);
-
-            Image bg = questItemPrefab.AddComponent<Image>();
-            bg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
-
-            Button button = questItemPrefab.AddComponent<Button>();
-
-            // Quest Name Text
-            GameObject nameObj = new GameObject("QuestName");
-            nameObj.transform.SetParent(questItemPrefab.transform, false);
-
-            RectTransform nameRect = nameObj.AddComponent<RectTransform>();
-            nameRect.anchorMin = new Vector2(0, 0);
-            nameRect.anchorMax = new Vector2(1, 1);
-            nameRect.offsetMin = new Vector2(10, 0);
-            nameRect.offsetMax = new Vector2(-10, 0);
-
-            Text nameText = nameObj.AddComponent<Text>();
-            nameText.text = "Quest Name";
-            nameText.fontSize = 14;
-            nameText.alignment = TextAnchor.MiddleLeft;
-            nameText.color = Color.white;
-            nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            // Add QuestItemUI component
-            QuestItemUI itemUI = questItemPrefab.AddComponent<QuestItemUI>();
-
-            // Deactivate prefab
-            questItemPrefab.SetActive(false);
-
-            Debug.Log("[QuestUI] Quest item prefab created");
         }
 
         private void CreateTabs()
