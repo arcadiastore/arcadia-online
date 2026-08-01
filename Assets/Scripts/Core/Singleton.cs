@@ -15,7 +15,7 @@ namespace ArcadiaOnline.Core
             {
                 if (_instance == null)
                 {
-                    _instance = FindFirstObjectByType<T>();
+                    _instance = FindAnyObjectByType<T>();
                 }
                 return _instance;
             }
