@@ -17,9 +17,9 @@ namespace ArcadiaOnline.VFX
         [SerializeField] private float lifetime = 0.8f;
 
         [Header("Ukuran")]
-        [SerializeField] private float canvasScaleMultiplier = 0.015f; // Kecil
-        [SerializeField] private int normalFontSize = 10;
-        [SerializeField] private int criticalFontSize = 14;
+        [SerializeField] private float canvasScaleMultiplier = 0.008f; // Sangat kecil
+        [SerializeField] private int normalFontSize = 8;
+        [SerializeField] private int criticalFontSize = 10;
 
         void Awake()
         {
