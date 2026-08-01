@@ -1,5 +1,6 @@
 using UnityEngine;
 using ArcadiaOnline.Player;
+using ArcadiaOnline.Managers;
 
 namespace ArcadiaOnline.Monster
 {
@@ -289,8 +290,39 @@ namespace ArcadiaOnline.Monster
             }
         }
 
-        private void OnDrawGizmosSelected()
+        private void OnMouseDown()
         {
+            if (isDead) return;
+
+            // Cari player stats untuk damage
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                player = GameObject.Find("Player");
+            }
+
+            if (player == null) return;
+
+            // Ambil damage dari player
+            float rawDamage = 15f; // Default
+            PlayerStats playerStats = player.GetComponent<PlayerStats>();
+            if (playerStats != null)
+            {
+                rawDamage = playerStats.ATK;
+            }
+
+            // Hitung critical (10% chance)
+            bool isCritical = Random.Range(0f, 1f) < 0.1f;
+
+            // Terima damage
+            TakeDamage(rawDamage, isCritical);
+
+            // Play attack sound
+            if (JobSFXManager.Instance != null)
+            {
+                JobSFXManager.Instance.PlayAttack("male");
+            }
+        }
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, detectRange);
 
