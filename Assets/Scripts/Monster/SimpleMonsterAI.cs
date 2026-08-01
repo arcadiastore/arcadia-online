@@ -5,7 +5,7 @@ using ArcadiaOnline.Managers;
 namespace ArcadiaOnline.Monster
 {
     /// <summary>
-    /// Monster AI sederhana: Patrol → Chase → Attack.
+    /// Monster AI sederhana: Patrol → Chase → Attack. Bisa di-klik untuk diserang.
     /// </summary>
     public class SimpleMonsterAI : MonoBehaviour
     {
@@ -206,10 +206,57 @@ namespace ArcadiaOnline.Monster
             patrolTarget = spawnPosition + new Vector3(randomCircle.x, 0, randomCircle.y);
         }
 
+        /// <summary>
+        /// Klik untuk menyerang monster.
+        /// </summary>
+        private void OnMouseDown()
+        {
+            if (isDead) return;
+
+            // Cari player
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                player = GameObject.Find("Player");
+            }
+
+            if (player == null) return;
+
+            // Ambil damage dari player
+            float rawDamage = 15f; // Default
+            PlayerStats playerStats = player.GetComponent<PlayerStats>();
+            if (playerStats != null)
+            {
+                rawDamage = playerStats.ATK;
+            }
+
+            // Hitung critical (10% chance)
+            bool isCritical = Random.Range(0f, 1f) < 0.1f;
+
+            // Terima damage
+            TakeDamage(rawDamage, isCritical);
+
+            // Play attack sound
+            if (JobSFXManager.Instance != null)
+            {
+                JobSFXManager.Instance.PlayAttack("male");
+            }
+        }
+
+        /// <summary>
+        /// Terima damage dari player.
+        /// </summary>
         public void TakeDamage(float rawDamage, bool isCritical = false)
         {
             if (isDead) return;
 
+            // Trigger battle BGM
+            if (BattleBGMManager.Instance != null)
+            {
+                BattleBGMManager.Instance.EnterBattle();
+            }
+
+            // Hitung damage dengan defense
             float damage = Mathf.Max(1, rawDamage - defense);
             damage *= Random.Range(0.9f, 1.1f);
 
@@ -221,8 +268,25 @@ namespace ArcadiaOnline.Monster
             damage = Mathf.Floor(damage);
             currentHP = Mathf.Max(0, currentHP - damage);
 
+            // Visual feedback
             HitFlash();
 
+            // Spawn damage popup
+            if (DamagePopupSpawner.Instance != null)
+            {
+                DamagePopupSpawner.Instance.SpawnDamagePopup(transform.position, damage, isCritical, transform);
+            }
+
+            // Spawn hit effect
+            SimpleVFXCreator.CreateHitEffect().transform.position = transform.position + Vector3.up;
+
+            // Play hit sound
+            if (JobSFXManager.Instance != null)
+            {
+                JobSFXManager.Instance.PlayHit("male");
+            }
+
+            // Chase player setelah diserang
             if (playerTarget != null)
             {
                 currentState = AIState.Chase;
@@ -259,6 +323,15 @@ namespace ArcadiaOnline.Monster
             // Beri EXP ke player
             GiveEXPToPlayer();
 
+            // Spawn death effect
+            SimpleVFXCreator.CreateDeathEffect().transform.position = transform.position + Vector3.up * 0.5f;
+
+            // Exit battle BGM
+            if (BattleBGMManager.Instance != null)
+            {
+                BattleBGMManager.Instance.ExitBattle();
+            }
+
             Debug.Log($"[Monster] MATI! EXP: {expReward}");
 
             Collider col = GetComponent<Collider>();
@@ -267,12 +340,8 @@ namespace ArcadiaOnline.Monster
             Destroy(gameObject, 2f);
         }
 
-        /// <summary>
-        /// Beri EXP ke player.
-        /// </summary>
         private void GiveEXPToPlayer()
         {
-            // Cari LevelUpSystem di player
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player == null)
             {
@@ -290,39 +359,8 @@ namespace ArcadiaOnline.Monster
             }
         }
 
-        private void OnMouseDown()
+        private void OnDrawGizmosSelected()
         {
-            if (isDead) return;
-
-            // Cari player stats untuk damage
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player == null)
-            {
-                player = GameObject.Find("Player");
-            }
-
-            if (player == null) return;
-
-            // Ambil damage dari player
-            float rawDamage = 15f; // Default
-            PlayerStats playerStats = player.GetComponent<PlayerStats>();
-            if (playerStats != null)
-            {
-                rawDamage = playerStats.ATK;
-            }
-
-            // Hitung critical (10% chance)
-            bool isCritical = Random.Range(0f, 1f) < 0.1f;
-
-            // Terima damage
-            TakeDamage(rawDamage, isCritical);
-
-            // Play attack sound
-            if (JobSFXManager.Instance != null)
-            {
-                JobSFXManager.Instance.PlayAttack("male");
-            }
-        }
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, detectRange);
 
