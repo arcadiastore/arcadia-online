@@ -1,4 +1,5 @@
 using UnityEngine;
+using ArcadiaOnline.Inventory;
 
 namespace ArcadiaOnline.Equipment
 {
@@ -48,20 +49,15 @@ namespace ArcadiaOnline.Equipment
     }
 
     /// <summary>
-    /// Data equipment (ScriptableObject).
+    /// Data equipment (ScriptableObject) - inherit dari ItemData.
     /// </summary>
     [CreateAssetMenu(fileName = "New Equipment", menuName = "Arcadia/Equipment")]
-    public class EquipmentData : ScriptableObject
+    public class EquipmentData : ItemData
     {
-        [Header("Basic Info")]
-        public string id;
-        public string itemName;
-        [TextArea(2, 4)]
-        public string description;
+        [Header("Equipment Info")]
         public EquipmentSlot slot;
         public EquipmentRarity rarity = EquipmentRarity.Common;
         public int levelRequirement = 1;
-        public int sellPrice = 10;
 
         [Header("Weapon Only")]
         public WeaponType weaponType = WeaponType.None;
@@ -90,8 +86,14 @@ namespace ArcadiaOnline.Equipment
         public float atkSpdBonus;
 
         [Header("Visual")]
-        public Sprite icon;
         public Color glowColor = Color.white;
+
+        void OnValidate()
+        {
+            type = ItemType.Equipment;
+            isUsable = false;
+            isEquippable = true;
+        }
 
         // === HELPER METHODS ===
 
