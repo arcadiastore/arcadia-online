@@ -11,10 +11,10 @@ namespace ArcadiaOnline.VFX
         public static DamagePopupSpawner Instance { get; private set; }
 
         [Header("Settings")]
-        [SerializeField] private float spawnHeight = 2f;
-        [SerializeField] private float randomOffset = 0.5f;
-        [SerializeField] private float moveSpeed = 2f;
-        [SerializeField] private float lifetime = 1.5f;
+        [SerializeField] private float spawnHeight = 1.5f; // Lebih dekat ke monster
+        [SerializeField] private float randomOffset = 0.3f;
+        [SerializeField] private float moveSpeed = 1.5f; // Lebih lambat
+        [SerializeField] private float lifetime = 1.2f; // Lebih singkat
 
         void Awake()
         {
@@ -56,12 +56,12 @@ namespace ArcadiaOnline.VFX
             textObj.transform.SetParent(canvasObj.transform, false);
 
             RectTransform rectTransform = textObj.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(200, 50);
+            rectTransform.sizeDelta = new Vector2(80, 30); // Lebih kecil
             rectTransform.anchoredPosition = Vector2.zero;
 
             Text text = textObj.AddComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 30;
+            text.fontSize = 16; // Lebih kecil
             text.alignment = TextAnchor.MiddleCenter;
 
             // Set warna dan text
@@ -69,14 +69,14 @@ namespace ArcadiaOnline.VFX
             {
                 text.text = Mathf.CeilToInt(damage).ToString() + "!";
                 text.color = new Color(0.6f, 0f, 0.8f); // Ungu
-                text.fontSize = 40;
+                text.fontSize = 20; // Sedikit lebih besar untuk critical
                 text.fontStyle = FontStyle.Bold;
             }
             else
             {
                 text.text = Mathf.CeilToInt(damage).ToString();
                 text.color = Color.red;
-                text.fontSize = 30;
+                text.fontSize = 16;
                 text.fontStyle = FontStyle.Bold;
             }
 
