@@ -52,26 +52,38 @@ namespace ArcadiaOnline.Quest
         /// </summary>
         private void InitializeQuests()
         {
-            if (allQuests == null) return;
+            Debug.Log($"[Quest] InitializeQuests called. allQuests count: {(allQuests != null ? allQuests.Count : 0)}");
+
+            if (allQuests == null)
+            {
+                Debug.LogWarning("[Quest] allQuests is null!");
+                return;
+            }
 
             foreach (QuestData quest in allQuests)
             {
-                if (quest == null) continue;
+                if (quest == null)
+                {
+                    Debug.LogWarning("[Quest] Quest is null in list!");
+                    continue;
+                }
 
                 // Set initial status
                 if (string.IsNullOrEmpty(quest.previousQuestID))
                 {
                     // Quest tanpa prerequisite = Available
                     questStatuses[quest.questID] = QuestStatus.Available;
+                    Debug.Log($"[Quest] Set AVAILABLE: {quest.questName} ({quest.questID})");
                 }
                 else
                 {
                     // Quest dengan prerequisite = Locked
                     questStatuses[quest.questID] = QuestStatus.Locked;
+                    Debug.Log($"[Quest] Set LOCKED: {quest.questName} (needs: {quest.previousQuestID})");
                 }
             }
 
-            Debug.Log($"[Quest] Initialized {allQuests.Count} quests");
+            Debug.Log($"[Quest] Initialized {allQuests.Count} quests. Statuses count: {questStatuses.Count}");
         }
 
         /// <summary>
@@ -358,18 +370,28 @@ namespace ArcadiaOnline.Quest
         {
             List<QuestData> available = new List<QuestData>();
 
+            Debug.Log($"[Quest] GetAvailableQuests called. Statuses count: {questStatuses.Count}");
+
             foreach (var kvp in questStatuses)
             {
+                Debug.Log($"[Quest] Checking: {kvp.Key} = {kvp.Value}");
+
                 if (kvp.Value == QuestStatus.Available)
                 {
                     QuestData quest = GetQuestData(kvp.Key);
                     if (quest != null)
                     {
                         available.Add(quest);
+                        Debug.Log($"[Quest] Added to available: {quest.questName}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[Quest] Quest data not found for: {kvp.Key}");
                     }
                 }
             }
 
+            Debug.Log($"[Quest] Available quests: {available.Count}");
             return available;
         }
 

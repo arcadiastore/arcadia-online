@@ -152,7 +152,13 @@ namespace ArcadiaOnline.Quest
         /// </summary>
         private void RefreshQuestList()
         {
-            if (QuestManager.Instance == null) return;
+            Debug.Log($"[QuestUI] RefreshQuestList called. Tab: {currentTab}");
+
+            if (QuestManager.Instance == null)
+            {
+                Debug.LogWarning("[QuestUI] QuestManager.Instance is null!");
+                return;
+            }
 
             // Clear existing items
             if (questListParent != null)
@@ -178,6 +184,8 @@ namespace ArcadiaOnline.Quest
                     break;
             }
 
+            Debug.Log($"[QuestUI] Quests to display: {quests.Count}");
+
             // Create quest items
             if (questItemPrefab != null && questListParent != null)
             {
@@ -199,6 +207,10 @@ namespace ArcadiaOnline.Quest
                         button.onClick.AddListener(() => SelectQuest(questRef));
                     }
                 }
+            }
+            else
+            {
+                Debug.LogWarning($"[QuestUI] questItemPrefab: {questItemPrefab != null}, questListParent: {questListParent != null}");
             }
 
             // Update tab button colors
