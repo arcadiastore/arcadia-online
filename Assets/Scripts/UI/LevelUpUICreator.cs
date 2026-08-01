@@ -4,215 +4,201 @@ using UnityEngine.UI;
 namespace ArcadiaOnline.UI
 {
     /// <summary>
-    /// Auto-create Level Up UI saat game start.
-    /// Tidak perlu setup manual di Unity Editor.
+    /// Auto-create Level Up UI dengan layout yang benar.
     /// </summary>
     public class LevelUpUICreator : MonoBehaviour
     {
         void Awake()
         {
             CreateLevelUpUI();
-            Destroy(this.gameObject); // Hapus creator setelah UI dibuat
+            Destroy(this.gameObject);
         }
 
-        /// <summary>
-        /// Buat semua UI elements secara programmatic.
-        /// </summary>
         private void CreateLevelUpUI()
         {
-            // Cari atau buat Canvas
+            // Cari Canvas yang sudah ada
             Canvas canvas = FindFirstObjectByType<Canvas>();
             if (canvas == null)
             {
                 GameObject canvasObj = new GameObject("Canvas");
                 canvas = canvasObj.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                canvas.sortingOrder = 100;
                 canvasObj.AddComponent<CanvasScaler>();
                 canvasObj.AddComponent<GraphicRaycaster>();
             }
 
-            // === LEVEL UP PANEL (Container) ===
-            GameObject levelUpPanel = CreatePanel(canvas.transform, "LevelUpPanel",
-                new Vector2(10, -10), new Vector2(200, 120), new Color(0, 0, 0, 0.7f));
+            // === MAIN PANEL (Kiri Atas) ===
+            GameObject mainPanel = new GameObject("LevelUpPanel");
+            mainPanel.transform.SetParent(canvas.transform, false);
+
+            RectTransform mainRect = mainPanel.AddComponent<RectTransform>();
+            // Anchor ke kiri atas
+            mainRect.anchorMin = new Vector2(0, 1);
+            mainRect.anchorMax = new Vector2(0, 1);
+            mainRect.pivot = new Vector2(0, 1);
+            mainRect.anchoredPosition = new Vector2(10, -10);
+            mainRect.sizeDelta = new Vector2(220, 100);
+
+            Image mainImage = mainPanel.AddComponent<Image>();
+            mainImage.color = new Color(0, 0, 0, 0.6f);
 
             // === LEVEL TEXT ===
-            GameObject levelText = CreateText(levelUpPanel.transform, "LevelText",
-                "Lv. 1", 18, FontStyle.Bold, Color.white,
-                new Vector2(0, 0), new Vector2(200, 25), TextAnchor.MiddleCenter);
+            GameObject levelTextObj = CreateTextElement(mainPanel.transform, "LevelText",
+                "Lv. 1", 20, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+            RectTransform levelRect = levelTextObj.GetComponent<RectTransform>();
+            levelRect.anchorMin = new Vector2(0, 1);
+            levelRect.anchorMax = new Vector2(1, 1);
+            levelRect.pivot = new Vector2(0.5f, 1);
+            levelRect.anchoredPosition = new Vector2(0, -5);
+            levelRect.sizeDelta = new Vector2(0, 25);
 
-            // Set anchor ke Top-Stretch
-            RectTransform levelTextRect = levelText.GetComponent<RectTransform>();
-            SetAnchor(levelTextRect, AnchorPreset.TopStretch);
+            // === HP BAR ROW ===
+            CreateBarRow(mainPanel.transform, "HP", new Color(0.8f, 0.1f, 0.1f), -35);
 
-            // === HP BAR ===
-            GameObject hpBarBG = CreatePanel(levelUpPanel.transform, "HPBarBG",
-                new Vector2(10, -30), new Vector2(180, 20), new Color(0.2f, 0.2f, 0.2f, 1f));
-            SetAnchorTopLeft(hpBarBG.GetComponent<RectTransform>());
+            // === MP BAR ROW ===
+            CreateBarRow(mainPanel.transform, "MP", new Color(0.1f, 0.3f, 0.8f), -60);
 
-            GameObject hpBar = CreateFilledBar(hpBarBG.transform, "HPBar",
-                new Color(0.8f, 0.1f, 0.1f, 1f)); // Merah
+            // === EXP BAR ROW ===
+            CreateBarRow(mainPanel.transform, "EXP", new Color(0.2f, 0.8f, 0.2f), -85, true);
 
-            GameObject hpText = CreateText(levelUpPanel.transform, "HPText",
-                "100/100", 12, FontStyle.Normal, Color.white,
-                new Vector2(10, -30), new Vector2(180, 20), TextAnchor.MiddleCenter);
-            SetAnchorTopLeft(hpText.GetComponent<RectTransform>());
+            // === LEVEL UP NOTIFICATION (Tengah) ===
+            GameObject notif = new GameObject("LevelUpNotification");
+            notif.transform.SetParent(canvas.transform, false);
 
-            // === MP BAR ===
-            GameObject mpBarBG = CreatePanel(levelUpPanel.transform, "MPBarBG",
-                new Vector2(10, -55), new Vector2(180, 20), new Color(0.2f, 0.2f, 0.2f, 1f));
-            SetAnchorTopLeft(mpBarBG.GetComponent<RectTransform>());
+            RectTransform notifRect = notif.AddComponent<RectTransform>();
+            notifRect.anchorMin = new Vector2(0.5f, 0.5f);
+            notifRect.anchorMax = new Vector2(0.5f, 0.5f);
+            notifRect.pivot = new Vector2(0.5f, 0.5f);
+            notifRect.anchoredPosition = new Vector2(0, 100);
+            notifRect.sizeDelta = new Vector2(300, 60);
 
-            GameObject mpBar = CreateFilledBar(mpBarBG.transform, "MPBar",
-                new Color(0.1f, 0.3f, 0.8f, 1f)); // Biru
+            Image notifImage = notif.AddComponent<Image>();
+            notifImage.color = new Color(1f, 0.8f, 0f, 0.9f);
 
-            GameObject mpText = CreateText(levelUpPanel.transform, "MPText",
-                "50/50", 12, FontStyle.Normal, Color.white,
-                new Vector2(10, -55), new Vector2(180, 20), TextAnchor.MiddleCenter);
-            SetAnchorTopLeft(mpText.GetComponent<RectTransform>());
+            // Text di notifikasi
+            GameObject notifText = CreateTextElement(notif.transform, "LevelUpText",
+                "LEVEL UP!", 28, FontStyle.Bold, Color.black, TextAnchor.MiddleCenter);
+            RectTransform notifTextRect = notifText.GetComponent<RectTransform>();
+            notifTextRect.anchorMin = Vector2.zero;
+            notifTextRect.anchorMax = Vector2.one;
+            notifTextRect.offsetMin = Vector2.zero;
+            notifTextRect.offsetMax = Vector2.zero;
 
-            // === EXP BAR ===
-            GameObject expBarBG = CreatePanel(levelUpPanel.transform, "EXPBarBG",
-                new Vector2(10, -80), new Vector2(180, 15), new Color(0.2f, 0.2f, 0.2f, 1f));
-            SetAnchorTopLeft(expBarBG.GetComponent<RectTransform>());
+            notif.SetActive(false);
 
-            GameObject expBar = CreateFilledBar(expBarBG.transform, "EXPBar",
-                new Color(0.2f, 0.8f, 0.2f, 1f)); // Hijau
-
-            GameObject expText = CreateText(levelUpPanel.transform, "EXPText",
-                "0/100", 10, FontStyle.Normal, Color.white,
-                new Vector2(10, -80), new Vector2(180, 15), TextAnchor.MiddleCenter);
-            SetAnchorTopLeft(expText.GetComponent<RectTransform>());
-
-            // === LEVEL UP NOTIFICATION ===
-            GameObject notification = CreatePanel(canvas.transform, "LevelUpNotification",
-                new Vector2(0, 100), new Vector2(300, 80), new Color(1f, 0.8f, 0f, 0.9f));
-            SetAnchorCenter(notification.GetComponent<RectTransform>());
-            notification.SetActive(false); // Hidden by default
-
-            GameObject notificationText = CreateText(notification.transform, "LevelUpText",
-                "LEVEL UP!", 24, FontStyle.Bold, Color.black,
-                Vector2.zero, new Vector2(300, 80), TextAnchor.MiddleCenter);
-            SetStretch(notificationText.GetComponent<RectTransform>());
-
-            // === SETUP LEVEL UP UI COMPONENT ===
-            LevelUpUI levelUpUI = canvas.gameObject.AddComponent<LevelUpUI>();
-
-            // Assign references via reflection (karena field private)
-            SetField(levelUpUI, "levelText", levelText.GetComponent<Text>());
-            SetField(levelUpUI, "expBar", expBar.GetComponent<Image>());
-            SetField(levelUpUI, "hpBar", hpBar.GetComponent<Image>());
-            SetField(levelUpUI, "mpBar", mpBar.GetComponent<Image>());
-            SetField(levelUpUI, "expText", expText.GetComponent<Text>());
-            SetField(levelUpUI, "hpText", hpText.GetComponent<Text>());
-            SetField(levelUpUI, "mpText", mpText.GetComponent<Text>());
-            SetField(levelUpUI, "levelUpPanel", notification);
-            SetField(levelUpUI, "levelUpText", notificationText.GetComponent<Text>());
-
-            Debug.Log("[LevelUpUI] UI Created Successfully!");
+            // === SETUP COMPONENT ===
+            SetupLevelUpUI(canvas.gameObject, mainPanel, notif);
         }
 
-        // === HELPER METHODS ===
-
-        private GameObject CreatePanel(Transform parent, string name, Vector2 position, Vector2 size, Color color)
+        /// <summary>
+        /// Buat satu bar row (Label + Background + Fill + Text).
+        /// </summary>
+        private void CreateBarRow(Transform parent, string label, Color barColor, float yOffset, bool isEXP = false)
         {
-            GameObject panel = new GameObject(name);
-            panel.transform.SetParent(parent, false);
+            // Label (HP:, MP:, EXP:)
+            GameObject labelObj = CreateTextElement(parent, label + "Label",
+                label + ":", 12, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft);
+            RectTransform labelRect = labelObj.GetComponent<RectTransform>();
+            labelRect.anchorMin = new Vector2(0, 1);
+            labelRect.anchorMax = new Vector2(0, 1);
+            labelRect.pivot = new Vector2(0, 1);
+            labelRect.anchoredPosition = new Vector2(5, yOffset);
+            labelRect.sizeDelta = new Vector2(35, 15);
 
-            RectTransform rect = panel.AddComponent<RectTransform>();
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
+            // Bar Background
+            float barWidth = isEXP ? 150f : 160f;
+            float barHeight = isEXP ? 12f : 18f;
 
-            Image image = panel.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
+            GameObject barBG = new GameObject(label + "BarBG");
+            barBG.transform.SetParent(parent, false);
 
-            return panel;
+            RectTransform bgRect = barBG.AddComponent<RectTransform>();
+            bgRect.anchorMin = new Vector2(0, 1);
+            bgRect.anchorMax = new Vector2(0, 1);
+            bgRect.pivot = new Vector2(0, 1);
+            bgRect.anchoredPosition = new Vector2(40, yOffset);
+            bgRect.sizeDelta = new Vector2(barWidth, barHeight);
+
+            Image bgImage = barBG.AddComponent<Image>();
+            bgImage.color = new Color(0.15f, 0.15f, 0.15f, 1f);
+
+            // Bar Fill
+            GameObject barFill = new GameObject(label + "Bar");
+            barFill.transform.SetParent(barBG.transform, false);
+
+            RectTransform fillRect = barFill.AddComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+
+            Image fillImage = barFill.AddComponent<Image>();
+            fillImage.color = barColor;
+            fillImage.type = Image.Type.Filled;
+            fillImage.fillMethod = Image.FillMethod.Horizontal;
+            fillImage.fillOrigin = 0;
+            fillImage.fillAmount = 1f;
+
+            // Text (100/100)
+            GameObject textObj = CreateTextElement(barBG.transform, label + "Text",
+                "100/100", 10, FontStyle.Normal, Color.white, TextAnchor.MiddleCenter);
+            RectTransform textRect = textObj.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
         }
 
-        private GameObject CreateText(Transform parent, string name, string text, int fontSize,
-            FontStyle fontStyle, Color color, Vector2 position, Vector2 size, TextAnchor alignment)
+        /// <summary>
+        /// Buat text element.
+        /// </summary>
+        private GameObject CreateTextElement(Transform parent, string name, string text,
+            int fontSize, FontStyle style, Color color, TextAnchor alignment)
         {
-            GameObject textObj = new GameObject(name);
-            textObj.transform.SetParent(parent, false);
+            GameObject obj = new GameObject(name);
+            obj.transform.SetParent(parent, false);
 
-            RectTransform rect = textObj.AddComponent<RectTransform>();
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
+            obj.AddComponent<RectTransform>();
 
-            Text textComponent = textObj.AddComponent<Text>();
-            textComponent.text = text;
-            textComponent.fontSize = fontSize;
-            textComponent.fontStyle = fontStyle;
-            textComponent.color = color;
-            textComponent.alignment = alignment;
-            textComponent.font = Font.CreateDynamicFontFromOSFont("Arial", fontSize);
-            textComponent.raycastTarget = false;
+            Text textComp = obj.AddComponent<Text>();
+            textComp.text = text;
+            textComp.fontSize = fontSize;
+            textComp.fontStyle = style;
+            textComp.color = color;
+            textComp.alignment = alignment;
+            textComp.font = Font.CreateDynamicFontFromOSFont("Arial", fontSize);
+            textComp.raycastTarget = false;
 
-            return textObj;
+            return obj;
         }
 
-        private GameObject CreateFilledBar(Transform parent, string name, Color color)
+        /// <summary>
+        /// Setup LevelUpUI component dengan references.
+        /// </summary>
+        private void SetupLevelUpUI(GameObject canvasObj, GameObject mainPanel, GameObject notif)
         {
-            GameObject bar = new GameObject(name);
-            bar.transform.SetParent(parent, false);
+            LevelUpUI ui = canvasObj.AddComponent<LevelUpUI>();
 
-            RectTransform rect = bar.AddComponent<RectTransform>();
-            SetStretch(rect); // Fill parent
+            // Cari elements
+            Text levelText = mainPanel.transform.Find("LevelText")?.GetComponent<Text>();
+            Image hpBar = mainPanel.transform.Find("HPBarBG/HPBar")?.GetComponent<Image>();
+            Image mpBar = mainPanel.transform.Find("MPBarBG/MPBar")?.GetComponent<Image>();
+            Image expBar = mainPanel.transform.Find("EXPBarBG/EXPBar")?.GetComponent<Image>();
+            Text hpText = mainPanel.transform.Find("HPBarBG/HPText")?.GetComponent<Text>();
+            Text mpText = mainPanel.transform.Find("MPBarBG/MPText")?.GetComponent<Text>();
+            Text expText = mainPanel.transform.Find("EXPBarBG/EXPText")?.GetComponent<Text>();
+            Text notifText = notif.transform.Find("LevelUpText")?.GetComponent<Text>();
 
-            Image image = bar.AddComponent<Image>();
-            image.color = color;
-            image.type = Image.Type.Filled;
-            image.fillMethod = Image.FillMethod.Horizontal;
-            image.fillOrigin = 0; // Left
-            image.fillAmount = 1f;
-
-            return bar;
-        }
-
-        // === ANCHOR HELPERS ===
-
-        private enum AnchorPreset
-        {
-            TopLeft, TopCenter, TopRight,
-            MiddleLeft, MiddleCenter, MiddleRight,
-            BottomLeft, BottomCenter, BottomRight,
-            TopStretch, MiddleStretch, BottomStretch,
-            StretchLeft, StretchRight, StretchCenter,
-            StretchAll
-        }
-
-        private void SetAnchor(RectTransform rect, AnchorPreset preset)
-        {
-            switch (preset)
-            {
-                case AnchorPreset.TopStretch:
-                    rect.anchorMin = new Vector2(0, 1);
-                    rect.anchorMax = new Vector2(1, 1);
-                    break;
-            }
-        }
-
-        private void SetAnchorTopLeft(RectTransform rect)
-        {
-            rect.anchorMin = new Vector2(0, 1);
-            rect.anchorMax = new Vector2(0, 1);
-            rect.pivot = new Vector2(0, 1);
-        }
-
-        private void SetAnchorCenter(RectTransform rect)
-        {
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-        }
-
-        private void SetStretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            // Assign via reflection
+            SetField(ui, "levelText", levelText);
+            SetField(ui, "hpBar", hpBar);
+            SetField(ui, "mpBar", mpBar);
+            SetField(ui, "expBar", expBar);
+            SetField(ui, "hpText", hpText);
+            SetField(ui, "mpText", mpText);
+            SetField(ui, "expText", expText);
+            SetField(ui, "levelUpPanel", notif);
+            SetField(ui, "levelUpText", notifText);
         }
 
         private void SetField(object obj, string fieldName, object value)
@@ -220,7 +206,7 @@ namespace ArcadiaOnline.UI
             var field = obj.GetType().GetField(fieldName,
                 System.Reflection.BindingFlags.NonPublic |
                 System.Reflection.BindingFlags.Instance);
-            if (field != null)
+            if (field != null && value != null)
             {
                 field.SetValue(obj, value);
             }
