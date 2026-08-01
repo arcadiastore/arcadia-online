@@ -462,36 +462,31 @@ namespace ArcadiaOnline.World
         }
 
         /// <summary>
-        /// Create name label.
+        /// Create name label using TextMesh (more reliable for 3D).
         /// </summary>
         private void CreateNameLabel(GameObject parent, string text)
         {
-            // Create Canvas
-            GameObject canvasObj = new GameObject($"{parent.name}_Label");
-            canvasObj.transform.SetParent(parent.transform);
-            canvasObj.transform.localPosition = Vector3.up * 2.5f;
+            // Create text object
+            GameObject textObj = new GameObject($"{parent.name}_Label");
+            textObj.transform.SetParent(parent.transform);
+            textObj.transform.localPosition = Vector3.up * 2.5f;
+            textObj.transform.localScale = Vector3.one * 0.1f; // Small scale for TextMesh
 
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            canvasObj.AddComponent<RectTransform>().sizeDelta = new Vector2(200, 50);
+            // Add TextMesh component
+            TextMesh textMesh = textObj.AddComponent<TextMesh>();
+            textMesh.text = text;
+            textMesh.fontSize = 40;
+            textMesh.alignment = TextAlignment.Center;
+            textMesh.anchor = TextAnchor.MiddleCenter;
+            textMesh.color = Color.white;
+            textMesh.characterSize = 0.5f;
 
-            // Text
-            GameObject textObj = new GameObject("Text");
-            textObj.transform.SetParent(canvasObj.transform);
-            textObj.transform.localPosition = Vector3.zero;
-
-            RectTransform textRect = textObj.AddComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
-
-            UnityEngine.UI.Text textComp = textObj.AddComponent<UnityEngine.UI.Text>();
-            textComp.text = text;
-            textComp.fontSize = 24;
-            textComp.alignment = TextAnchor.MiddleCenter;
-            textComp.color = Color.white;
-            textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            // Add MeshRenderer for visibility
+            MeshRenderer renderer = textObj.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.material = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf").material;
+            }
         }
 
         /// <summary>
