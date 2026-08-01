@@ -64,6 +64,9 @@ namespace ArcadiaOnline.Quest
                 QuestManager.Instance.OnObjectiveUpdated += OnObjectiveUpdated;
             }
 
+            // Setup buttons AFTER CreateQuestUI
+            SetupButtons();
+
             // Hide panel at end of frame
             StartCoroutine(HidePanelAtEndOfFrame());
         }
@@ -80,6 +83,49 @@ namespace ArcadiaOnline.Quest
             if (Input.GetKeyDown(KeyCode.J))
             {
                 ToggleQuestPanel();
+            }
+        }
+
+        /// <summary>
+        /// Setup button listeners.
+        /// </summary>
+        private void SetupButtons()
+        {
+            Debug.Log("[QuestUI] SetupButtons called");
+
+            if (acceptButton != null)
+            {
+                acceptButton.onClick.AddListener(OnAcceptClicked);
+                Debug.Log("[QuestUI] Accept button listener added");
+            }
+            else
+            {
+                Debug.LogWarning("[QuestUI] acceptButton is null in SetupButtons!");
+            }
+
+            if (abandonButton != null)
+            {
+                abandonButton.onClick.AddListener(OnAbandonClicked);
+            }
+
+            if (claimButton != null)
+            {
+                claimButton.onClick.AddListener(OnClaimClicked);
+            }
+
+            if (activeTab != null)
+            {
+                activeTab.onClick.AddListener(() => SetTab(0));
+            }
+
+            if (availableTab != null)
+            {
+                availableTab.onClick.AddListener(() => SetTab(1));
+            }
+
+            if (completedTab != null)
+            {
+                completedTab.onClick.AddListener(() => SetTab(2));
             }
         }
 
