@@ -307,16 +307,15 @@ namespace ArcadiaOnline.Monster
                 BattleBGMManager.Instance.EnterBattle();
             }
 
-            // Hitung damage dengan defense
-            float damage = Mathf.Max(1, rawDamage - defense);
-            damage *= Random.Range(0.9f, 1.1f);
+            // Hitung damage - minimal 1 damage
+            float damage = rawDamage * Random.Range(0.9f, 1.1f);
 
             if (isCritical)
             {
                 damage *= 1.5f;
             }
 
-            damage = Mathf.Floor(damage);
+            damage = Mathf.Max(1, Mathf.Floor(damage)); // Minimal 1 damage
             currentHP = Mathf.Max(0, currentHP - damage);
 
             // Visual feedback
