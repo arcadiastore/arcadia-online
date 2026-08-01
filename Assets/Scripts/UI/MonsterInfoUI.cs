@@ -6,7 +6,6 @@ namespace ArcadiaOnline.UI
 {
     /// <summary>
     /// UI yang menampilkan info monster saat diserang.
-    /// Pakai Slider untuk HP bar.
     /// </summary>
     public class MonsterInfoUI : MonoBehaviour
     {
@@ -15,7 +14,7 @@ namespace ArcadiaOnline.UI
         [Header("UI Elements")]
         [SerializeField] private GameObject monsterInfoPanel;
         [SerializeField] private Text monsterNameText;
-        [SerializeField] private Slider monsterHPSlider; // Pakai Slider!
+        [SerializeField] private Slider monsterHPSlider;
         [SerializeField] private Text monsterHPText;
 
         [Header("Settings")]
@@ -81,6 +80,14 @@ namespace ArcadiaOnline.UI
                 monsterNameText.text = monster.MonsterName;
             }
 
+            // Set slider range
+            if (monsterHPSlider != null)
+            {
+                monsterHPSlider.minValue = 0;
+                monsterHPSlider.maxValue = monster.MaxHP;
+                monsterHPSlider.value = monster.CurrentHP;
+            }
+
             UpdateHPDisplay();
 
             if (monsterInfoPanel != null)
@@ -95,7 +102,11 @@ namespace ArcadiaOnline.UI
 
             if (monsterHPSlider != null)
             {
-                monsterHPSlider.value = currentTarget.HPPercent;
+                // Update value
+                monsterHPSlider.value = currentTarget.CurrentHP;
+
+                // Debug
+                Debug.Log($"[MonsterInfoUI] HP: {currentTarget.CurrentHP}/{currentTarget.MaxHP} = {currentTarget.HPPercent}");
             }
 
             if (monsterHPText != null)
