@@ -11,7 +11,7 @@ namespace ArcadiaOnline.VFX
         public static DamagePopupSpawner Instance { get; private set; }
 
         [Header("Settings")]
-        [SerializeField] private float spawnHeight = 1f;
+        [SerializeField] private float spawnHeight = 0.5f; // Dekat monster
         [SerializeField] private float randomOffset = 0.15f;
         [SerializeField] private float moveSpeed = 0.8f;
         [SerializeField] private float lifetime = 0.8f;
@@ -50,8 +50,8 @@ namespace ArcadiaOnline.VFX
                 }
             }
 
-            // Hitung spawn position di atas monster
-            Vector3 spawnPos = targetPosition + Vector3.up * (bodySize * 1.2f + spawnHeight);
+            // Hitung spawn position di atas monster (dekat)
+            Vector3 spawnPos = targetPosition + Vector3.up * (bodySize * 0.5f + spawnHeight);
             spawnPos += new Vector3(
                 Random.Range(-randomOffset, randomOffset),
                 0,
