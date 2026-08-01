@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using ArcadiaOnline.Equipment;
+using ArcadiaOnline.Player;
 
 namespace ArcadiaOnline.Inventory
 {
@@ -199,42 +200,43 @@ namespace ArcadiaOnline.Inventory
         /// </summary>
         private bool UseConsumable(ConsumableData consumable, int slotIndex)
         {
-            // Cari player
-            Player.LevelUpSystem levelUp = FindAnyObjectByType<Player.LevelUpSystem>();
-            if (levelUp == null) return false;
+            // Cari player stats
+            PlayerStats playerStats = FindAnyObjectByType<PlayerStats>();
+            if (playerStats == null) return false;
 
             bool used = false;
 
             switch (consumable.consumableType)
             {
                 case ConsumableType.HPPotion:
-                    levelUp.Heal(consumable.effectValue);
+                    playerStats.Heal(consumable.effectValue);
                     used = true;
                     Debug.Log($"[Inventory] Used {consumable.itemName}, restored {consumable.effectValue} HP");
                     break;
 
                 case ConsumableType.MPPotion:
-                    // TODO: Add MP restore
+                    playerStats.RestoreMP(consumable.effectValue);
                     used = true;
                     Debug.Log($"[Inventory] Used {consumable.itemName}, restored {consumable.effectValue} MP");
                     break;
 
                 case ConsumableType.StaminaPotion:
-                    // TODO: Add Stamina restore
+                    playerStats.RestoreStamina(consumable.effectValue);
                     used = true;
                     Debug.Log($"[Inventory] Used {consumable.itemName}, restored {consumable.effectValue} Stamina");
                     break;
 
                 case ConsumableType.BuffPotion:
-                    // TODO: Apply buff
+                    // TODO: Apply buff (need buff system)
                     used = true;
                     Debug.Log($"[Inventory] Used {consumable.itemName}, buff applied");
                     break;
 
                 case ConsumableType.Food:
-                    // TODO: Apply regen over time
+                    // Food restores HP over time (simplified: instant heal)
+                    playerStats.Heal(consumable.effectValue);
                     used = true;
-                    Debug.Log($"[Inventory] Used {consumable.itemName}, regen started");
+                    Debug.Log($"[Inventory] Used {consumable.itemName}, restored {consumable.effectValue} HP");
                     break;
             }
 
@@ -386,5 +388,107 @@ namespace ArcadiaOnline.Inventory
         }
 
         public int MaxSlots => maxSlots;
+
+        // === STRING ID WRAPPERS (for Shop/Quest integration) ===
+
+        /// <summary>
+        /// Add item by ID. Creates a temporary ItemData if not found in database.
+        /// </summary>
+        public bool AddItem(string itemID, int quantity = 1)
+        {
+            if (string.IsNullOrEmpty(itemID) || quantity <= 0) return false;
+
+            // Try to find existing item in inventory
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] != null && items[i].ItemData != null &&
+                    items[i].ItemData.itemID == itemID)
+                {
+                    // Stack to existing
+                    if (items[i].CanStack())
+                    {
+                        items[i].AddQuantity(quantity);
+                        OnInventoryChanged?.Invoke();
+                        return true;
+                    }
+                }
+            }
+
+            // Create new ItemData
+            ItemData newData = ScriptableObject.CreateInstance<ItemData>();
+            newData.itemID = itemID;
+            newData.itemName = itemID;
+            newData.isStackable = true;
+            newData.maxStack = 99;
+
+            return AddItem(newData, quantity);
+        }
+
+        /// <summary>
+        /// Remove item by ID.
+        /// </summary>
+        public bool RemoveItem(string itemID, int quantity = 1)
+        {
+            if (string.IsNullOrEmpty(itemID) || quantity <= 0) return false;
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] != null && items[i].ItemData != null &&
+                    items[i].ItemData.itemID == itemID)
+                {
+                    items[i].RemoveQuantity(quantity);
+
+                    if (items[i].Quantity <= 0)
+                    {
+                        items[i] = null;
+                    }
+
+                    OnInventoryChanged?.Invoke();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if player has item by ID.
+        /// </summary>
+        public bool HasItem(string itemID, int quantity = 1)
+        {
+            if (string.IsNullOrEmpty(itemID)) return false;
+
+            int total = 0;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] != null && items[i].ItemData != null &&
+                    items[i].ItemData.itemID == itemID)
+                {
+                    total += items[i].Quantity;
+                }
+            }
+
+            return total >= quantity;
+        }
+
+        /// <summary>
+        /// Get item count by ID.
+        /// </summary>
+        public int GetItemCount(string itemID)
+        {
+            if (string.IsNullOrEmpty(itemID)) return 0;
+
+            int total = 0;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] != null && items[i].ItemData != null &&
+                    items[i].ItemData.itemID == itemID)
+                {
+                    total += items[i].Quantity;
+                }
+            }
+
+            return total;
+        }
     }
 }

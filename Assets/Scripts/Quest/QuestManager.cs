@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using ArcadiaOnline.Player;
+using ArcadiaOnline.Shop;
+using ArcadiaOnline.Inventory;
 
 namespace ArcadiaOnline.Quest
 {
@@ -262,7 +264,10 @@ namespace ArcadiaOnline.Quest
             // Gold reward
             if (quest.rewards.goldReward > 0)
             {
-                // TODO: Add gold to player inventory
+                if (ShopManager.Instance != null)
+                {
+                    ShopManager.Instance.AddGold(quest.rewards.goldReward);
+                }
                 Debug.Log($"[Quest] +{quest.rewards.goldReward} Gold");
             }
 
@@ -271,7 +276,10 @@ namespace ArcadiaOnline.Quest
             {
                 foreach (string itemID in quest.rewards.itemIDs)
                 {
-                    // TODO: Add item to inventory
+                    if (InventoryManager.Instance != null)
+                    {
+                        InventoryManager.Instance.AddItem(itemID, 1);
+                    }
                     Debug.Log($"[Quest] +Item: {itemID}");
                 }
             }
@@ -279,7 +287,10 @@ namespace ArcadiaOnline.Quest
             // Equipment reward
             if (!string.IsNullOrEmpty(quest.rewards.equipmentID))
             {
-                // TODO: Add equipment to inventory
+                if (InventoryManager.Instance != null)
+                {
+                    InventoryManager.Instance.AddItem(quest.rewards.equipmentID, 1);
+                }
                 Debug.Log($"[Quest] +Equipment: {quest.rewards.equipmentID}");
             }
         }

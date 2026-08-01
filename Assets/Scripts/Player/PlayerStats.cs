@@ -100,6 +100,23 @@ namespace ArcadiaOnline.Player
             Events.HPChanged(_currentHP, MaxHP);
         }
 
+        /// <summary>
+        /// Restore MP.
+        /// </summary>
+        public void RestoreMP(float amount)
+        {
+            _currentMP = Mathf.Min(MaxMP, _currentMP + amount);
+            Events.MPChanged(_currentMP, MaxMP);
+        }
+
+        /// <summary>
+        /// Restore Stamina.
+        /// </summary>
+        public void RestoreStamina(float amount)
+        {
+            _stamina = Mathf.Min(MAX_STAMINA, _stamina + amount);
+        }
+
         public bool TrySpendMP(float amount)
         {
             if (_currentMP < amount) return false;

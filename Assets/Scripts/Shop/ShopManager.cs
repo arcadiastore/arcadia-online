@@ -251,8 +251,10 @@ namespace ArcadiaOnline.Shop
         /// </summary>
         private void AddItemToInventory(string itemID, int amount)
         {
-            // TODO: Implement with InventoryManager
-            // For now, just log
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.AddItem(itemID, amount);
+            }
             Debug.Log($"[Shop] Added {amount}x {itemID} to inventory");
         }
 
@@ -261,8 +263,10 @@ namespace ArcadiaOnline.Shop
         /// </summary>
         private void RemoveItemFromInventory(string itemID, int amount)
         {
-            // TODO: Implement with InventoryManager
-            // For now, just log
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.RemoveItem(itemID, amount);
+            }
             Debug.Log($"[Shop] Removed {amount}x {itemID} from inventory");
         }
 
@@ -271,8 +275,11 @@ namespace ArcadiaOnline.Shop
         /// </summary>
         private bool HasItemInInventory(string itemID, int amount)
         {
-            // TODO: Implement with InventoryManager
-            // For now, return true
+            if (InventoryManager.Instance != null)
+            {
+                return InventoryManager.Instance.HasItem(itemID, amount);
+            }
+            // Default: allow sell if no inventory manager
             return true;
         }
 
