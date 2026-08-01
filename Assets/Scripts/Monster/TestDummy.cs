@@ -139,13 +139,6 @@ namespace ArcadiaOnline.Monster
             isDead = true;
             Debug.Log("[Dummy] MATI!");
 
-            // Disable collider
-            var collider = GetComponent<Collider>();
-            if (collider != null)
-            {
-                collider.enabled = false;
-            }
-
             // Efek mati: scale down ke 0
             StartCoroutine(DeathEffect());
         }
@@ -172,8 +165,16 @@ namespace ArcadiaOnline.Monster
                 yield return null;
             }
 
-            // Sembunyikan
-            gameObject.SetActive(false);
+            // Sembunyikan (disable renderer & collider, tapi tetap aktif)
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = false;
+            }
+            var collider = GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
 
             if (respawn)
             {
@@ -189,12 +190,13 @@ namespace ArcadiaOnline.Monster
 
             // Reset position & scale
             transform.position = originalPosition;
-            transform.localScale = Vector3.one * 2f; // Scale awal monster
+            transform.localScale = Vector3.one * 2f;
 
             // Tampilkan kembali
-            gameObject.SetActive(true);
-
-            // Re-enable collider
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = true;
+            }
             var collider = GetComponent<Collider>();
             if (collider != null)
             {
