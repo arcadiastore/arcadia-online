@@ -9,7 +9,7 @@
 | Fase | Status | Progress |
 |------|--------|----------|
 | Fase 0: Dokumentasi | ✅ SELESAI | 100% |
-| Fase 1: Prototipe | 🔄 DALAM PROSES | 70% |
+| Fase 1: Prototipe | 🔄 DALAM PROSES | 80% |
 | Fase 2: Vertical Slice | ⏳ BELUM MULAI | 0% |
 
 ---
@@ -85,11 +85,13 @@
 ### Belum Dibuat (Next Steps)
 - [x] Prefab Monster (test dummy)
 - [x] Scene Fase 1 (test arena)
-- [ ] UI Prefab (HUD) - sudah ada SimpleHUD
+- [x] UI Prefab (HUD) - SimpleHUD
+- [x] Sound Effect (SFX) - Male/Female per action
+- [x] BGM System - Map + Battle
 - [ ] Material cel-shader dasar
 - [ ] Animasi dasar (idle, walk, run, attack)
 - [ ] Particle effect (hit, death)
-- [ ] Sound effect (hit, death, walk)
+- [ ] Monster AI (patrol, chase)
 
 ---
 
