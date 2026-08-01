@@ -40,6 +40,23 @@ namespace ArcadiaOnline.Dialogue
         public System.Action<string> OnDialogueEvent;
         public System.Action OnDialogueEnd;
 
+        /// <summary>
+        /// Set UI references from DialogueUI.
+        /// </summary>
+        public void SetUIReferences(GameObject panel, Text speaker, Text dialogue,
+            Image portrait, GameObject portraitPnl, Button continueBtn,
+            GameObject choicePnl, Transform choiceParent)
+        {
+            dialoguePanel = panel;
+            speakerNameText = speaker;
+            dialogueText = dialogue;
+            portraitImage = portrait;
+            portraitPanel = portraitPnl;
+            continueButton = continueBtn;
+            choicePanel = choicePnl;
+            choiceButtonParent = choiceParent;
+        }
+
         void Awake()
         {
             if (Instance == null)
@@ -223,7 +240,10 @@ namespace ArcadiaOnline.Dialogue
         private void SkipTypewriter()
         {
             StopAllCoroutines();
-            dialogueText.text = fullText;
+            if (dialogueText != null)
+            {
+                dialogueText.text = fullText;
+            }
             isTyping = false;
         }
 

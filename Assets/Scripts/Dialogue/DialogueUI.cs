@@ -132,8 +132,15 @@ namespace ArcadiaOnline.Dialogue
             DialogueManager manager = FindAnyObjectByType<DialogueManager>();
             if (manager != null)
             {
-                // Set references via reflection or public setter
-                Debug.Log("[DialogueUI] DialogueManager found, setup references.");
+                // Set references
+                manager.SetUIReferences(dialoguePanel, speakerNameText, dialogueText,
+                    portraitImage, portraitPanel, continueButton,
+                    choicePanel, choiceButtonParent);
+                Debug.Log("[DialogueUI] DialogueManager references set!");
+            }
+            else
+            {
+                Debug.LogWarning("[DialogueUI] DialogueManager not found!");
             }
         }
 
