@@ -89,6 +89,12 @@ namespace ArcadiaOnline.Monster
             HitFlash();
             SpawnDamagePopup(damage);
 
+            // Play hit sound (dari player)
+            if (JobSFXManager.Instance != null)
+            {
+                JobSFXManager.Instance.PlayHit("male"); // Default male, nanti sesuaikan
+            }
+
             Debug.Log($"[Dummy] Terkena {damage} damage! HP: {currentHP}/{maxHP}");
 
             if (currentHP <= 0)
@@ -145,6 +151,12 @@ namespace ArcadiaOnline.Monster
         {
             isDead = true;
             Debug.Log("[Dummy] MATI!");
+
+            // Play death sound
+            if (JobSFXManager.Instance != null)
+            {
+                JobSFXManager.Instance.PlayDeath("male"); // Default male, nanti sesuaikan
+            }
 
             // Exit battle - kembali ke map BGM
             if (BattleBGMManager.Instance != null)
