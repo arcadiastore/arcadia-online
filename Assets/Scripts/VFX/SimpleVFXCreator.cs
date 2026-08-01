@@ -73,11 +73,11 @@ namespace ArcadiaOnline.VFX
 
             var main = ps.main;
             main.duration = 0.5f;
-            main.startLifetime = 1f;
-            main.startSpeed = 2f;
-            main.startSize = 0.5f;
-            main.startColor = new Color(0.5f, 0.1f, 0.1f); // Merah gelap
-            main.maxParticles = 30;
+            main.startLifetime = 1.5f; // Lebih lama
+            main.startSpeed = 3f; // Lebih cepat
+            main.startSize = 0.8f; // Lebih besar
+            main.startColor = new Color(0.8f, 0.1f, 0.1f); // Merah lebih terang
+            main.maxParticles = 50; // Lebih banyak
             main.loop = false;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
 

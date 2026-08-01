@@ -177,7 +177,7 @@ namespace ArcadiaOnline.Monster
             }
 
             // Spawn death effect
-            SimpleVFXCreator.CreateDeathEffect().transform.position = transform.position;
+            SimpleVFXCreator.CreateDeathEffect().transform.position = transform.position + Vector3.up * 1f;
 
             // Exit battle - kembali ke map BGM
             if (BattleBGMManager.Instance != null)

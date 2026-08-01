@@ -10,8 +10,8 @@ namespace ArcadiaOnline.VFX
         public static DamagePopupSpawner Instance { get; private set; }
 
         [Header("Settings")]
-        [SerializeField] private float spawnHeight = 2f; // Tinggi di atas target
-        [SerializeField] private float randomOffset = 0.3f; // Random X/Z offset
+        [SerializeField] private float spawnHeight = 3f; // Tinggi di atas target (lebih tinggi)
+        [SerializeField] private float randomOffset = 0.5f; // Random X/Z offset
 
         void Awake()
         {
