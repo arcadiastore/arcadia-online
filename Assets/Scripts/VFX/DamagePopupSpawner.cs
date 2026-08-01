@@ -4,8 +4,7 @@ using UnityEngine.UI;
 namespace ArcadiaOnline.VFX
 {
     /// <summary>
-    /// Damage popup menggunakan Canvas World Space dengan Text UI.
-    /// Pasti jalan karena pakai built-in font.
+    /// Damage popup yang otomatis menyesuaikan ukuran body monster.
     /// </summary>
     public class DamagePopupSpawner : MonoBehaviour
     {
@@ -18,9 +17,9 @@ namespace ArcadiaOnline.VFX
         [SerializeField] private float lifetime = 0.8f;
 
         [Header("Ukuran")]
-        [SerializeField] private float canvasScale = 0.01f; // Scale kecil untuk 3D
-        [SerializeField] private int normalFontSize = 14;
-        [SerializeField] private int criticalFontSize = 18;
+        [SerializeField] private float canvasScaleMultiplier = 0.15f; // Scale relatif ke body
+        [SerializeField] private int normalFontSize = 16;
+        [SerializeField] private int criticalFontSize = 22;
 
         void Awake()
         {
@@ -35,27 +34,42 @@ namespace ArcadiaOnline.VFX
         }
 
         /// <summary>
-        /// Spawn damage popup di posisi target.
+        /// Spawn damage popup di posisi target dengan ukuran sesuai body.
         /// </summary>
-        public void SpawnDamagePopup(Vector3 targetPosition, float damage, bool isCritical)
+        public void SpawnDamagePopup(Vector3 targetPosition, float damage, bool isCritical, Transform target = null)
         {
-            Vector3 spawnPos = targetPosition + Vector3.up * spawnHeight;
+            // Hitung ukuran body monster
+            float bodySize = 1f; // Default
+            if (target != null)
+            {
+                Renderer renderer = target.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    // Ambil ukuran bounds monster
+                    Vector3 size = renderer.bounds.size;
+                    bodySize = Mathf.Max(size.x, size.y, size.z);
+                }
+            }
+
+            // Hitung spawn position di atas monster
+            Vector3 spawnPos = targetPosition + Vector3.up * (bodySize * 1.2f + spawnHeight);
             spawnPos += new Vector3(
                 Random.Range(-randomOffset, randomOffset),
                 0,
                 Random.Range(-randomOffset, randomOffset)
             );
 
+            // Hitung canvas scale berdasarkan body size
+            float canvasScale = bodySize * canvasScaleMultiplier;
+
             // Buat Canvas World Space
             GameObject canvasObj = new GameObject("DamageCanvas");
             canvasObj.transform.position = spawnPos;
+            canvasObj.transform.localScale = Vector3.one * canvasScale;
 
             Canvas canvas = canvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             canvas.sortingOrder = 100;
-
-            // Set scale kecil untuk 3D
-            canvasObj.transform.localScale = Vector3.one * canvasScale;
 
             // Buat Text child
             GameObject textObj = new GameObject("DamageText");
@@ -99,7 +113,7 @@ namespace ArcadiaOnline.VFX
                 canvasObj.transform.Rotate(0, 180, 0);
             }
 
-            Debug.Log($"[DamagePopup] Spawned: {damage} (Critical: {isCritical})");
+            Debug.Log($"[DamagePopup] Spawned: {damage} (Critical: {isCritical}, BodySize: {bodySize}, Scale: {canvasScale})");
         }
     }
 

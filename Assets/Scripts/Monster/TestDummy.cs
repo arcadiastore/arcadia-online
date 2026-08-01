@@ -97,7 +97,7 @@ namespace ArcadiaOnline.Monster
             // Spawn damage popup dengan warna sesuai critical
             if (DamagePopupSpawner.Instance != null)
             {
-                DamagePopupSpawner.Instance.SpawnDamagePopup(transform.position, damage, isCritical);
+                DamagePopupSpawner.Instance.SpawnDamagePopup(transform.position, damage, isCritical, transform);
             }
             else
             {
