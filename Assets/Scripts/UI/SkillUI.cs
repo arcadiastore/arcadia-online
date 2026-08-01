@@ -79,7 +79,7 @@ namespace ArcadiaOnline.UI
             Image bg = slot.AddComponent<Image>();
             bg.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
-            // Skill icon (colored square based on type)
+            // Skill icon (colored square based on effect)
             GameObject icon = new GameObject("Icon");
             icon.transform.SetParent(slot.transform, false);
 
@@ -90,7 +90,7 @@ namespace ArcadiaOnline.UI
             iconRect.offsetMax = new Vector2(-5, -5);
 
             Image iconImage = icon.AddComponent<Image>();
-            iconImage.color = GetSkillColor(skill.skillType);
+            iconImage.color = GetSkillColor(skill.effect);
 
             // Cooldown overlay
             GameObject cooldown = new GameObject("Cooldown");
@@ -156,20 +156,20 @@ namespace ArcadiaOnline.UI
         }
 
         /// <summary>
-        /// Get color berdasarkan skill type.
+        /// Get color berdasarkan skill effect.
         /// </summary>
-        private Color GetSkillColor(Combat.SkillType type)
+        private Color GetSkillColor(Combat.SkillEffect effect)
         {
-            switch (type)
+            switch (effect)
             {
-                case Combat.SkillType.Physical:
+                case Combat.SkillEffect.Damage:
                     return new Color(0.8f, 0.2f, 0.2f); // Merah
-                case Combat.SkillType.Magical:
-                    return new Color(0.2f, 0.2f, 0.8f); // Biru
-                case Combat.SkillType.Heal:
+                case Combat.SkillEffect.Heal:
                     return new Color(0.2f, 0.8f, 0.2f); // Hijau
-                case Combat.SkillType.Buff:
+                case Combat.SkillEffect.Buff:
                     return new Color(0.8f, 0.8f, 0.2f); // Kuning
+                case Combat.SkillEffect.Debuff:
+                    return new Color(0.5f, 0.2f, 0.8f); // Ungu
                 default:
                     return Color.gray;
             }

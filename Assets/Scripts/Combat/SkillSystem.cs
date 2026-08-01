@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using ArcadiaOnline.VFX;
 
 namespace ArcadiaOnline.Combat
 {
@@ -16,6 +17,7 @@ namespace ArcadiaOnline.Combat
 
         [Header("References")]
         [SerializeField] private Player.LevelUpSystem levelUpSystem;
+        [SerializeField] private Player.PlayerStats playerStats;
 
         // Cooldown tracking
         private Dictionary<string, float> cooldownTimers = new Dictionary<string, float>();
@@ -35,11 +37,10 @@ namespace ArcadiaOnline.Combat
         void Start()
         {
             if (levelUpSystem == null)
-            {
                 levelUpSystem = GetComponent<Player.LevelUpSystem>();
-            }
+            if (playerStats == null)
+                playerStats = GetComponent<Player.PlayerStats>();
 
-            // Initialize default skills
             InitializeDefaultSkills();
         }
 
@@ -57,66 +58,50 @@ namespace ArcadiaOnline.Combat
         }
 
         /// <summary>
-        /// Initialize default skills berdasarkan level.
+        /// Initialize default skills.
         /// </summary>
         private void InitializeDefaultSkills()
         {
-            // Skill 1: Power Strike (Physical attack)
-            SkillData powerStrike = new SkillData
-            {
-                skillName = "Power Strike",
-                description = "Serangan fisik kuat",
-                skillType = SkillType.Physical,
-                damage = 20f,
-                mpCost = 10f,
-                cooldown = 3f,
-                range = 2.5f,
-                levelRequired = 1
-            };
+            // Skill 1: Power Strike
+            SkillData powerStrike = CreateSkill("Power Strike", "Serangan fisik kuat",
+                SkillType.Active, DamageType.Physical, 2f, 10f, 3f, 1, SkillEffect.Damage);
 
-            // Skill 2: Fire Bolt (Magic attack)
-            SkillData fireBolt = new SkillData
-            {
-                skillName = "Fire Bolt",
-                description = "Serangan api",
-                skillType = SkillType.Magical,
-                damage = 25f,
-                mpCost = 15f,
-                cooldown = 5f,
-                range = 5f,
-                levelRequired = 3
-            };
+            // Skill 2: Fire Bolt
+            SkillData fireBolt = CreateSkill("Fire Bolt", "Serangan api",
+                SkillType.Active, DamageType.Magic, 2.5f, 15f, 5f, 3, SkillEffect.Damage);
 
-            // Skill 3: Heal (Restore HP)
-            SkillData heal = new SkillData
-            {
-                skillName = "Heal",
-                description = "Pulihkan HP",
-                skillType = SkillType.Heal,
-                damage = 30f, // Heal amount
-                mpCost = 20f,
-                cooldown = 8f,
-                range = 0f, // Self
-                levelRequired = 5
-            };
+            // Skill 3: Heal
+            SkillData heal = CreateSkill("Heal", "Pulihkan HP",
+                SkillType.Active, DamageType.None, 0f, 20f, 8f, 5, SkillEffect.Heal);
 
-            // Skill 4: Berserk (Buff)
-            SkillData berserk = new SkillData
-            {
-                skillName = "Berserk",
-                description = "Tingkatkan ATK",
-                skillType = SkillType.Buff,
-                damage = 0f,
-                mpCost = 25f,
-                cooldown = 15f,
-                range = 0f, // Self
-                levelRequired = 7
-            };
+            // Skill 4: Berserk
+            SkillData berserk = CreateSkill("Berserk", "Tingkatkan ATK",
+                SkillType.Active, DamageType.None, 0f, 25f, 15f, 7, SkillEffect.Buff);
 
             equippedSkills.Add(powerStrike);
             equippedSkills.Add(fireBolt);
             equippedSkills.Add(heal);
             equippedSkills.Add(berserk);
+        }
+
+        /// <summary>
+        /// Helper buat buat skill.
+        /// </summary>
+        private SkillData CreateSkill(string name, string desc, SkillType type, DamageType dmgType,
+            float dmgMult, float mp, float cd, int lvlReq, SkillEffect effect)
+        {
+            SkillData skill = ScriptableObject.CreateInstance<SkillData>();
+            skill.id = name.ToLower().Replace(" ", "_");
+            skill.skillName = name;
+            skill.description = desc;
+            skill.type = type;
+            skill.damageType = dmgType;
+            skill.damageMultiplier = dmgMult;
+            skill.mpCost = mp;
+            skill.cooldown = cd;
+            skill.levelRequirement = lvlReq;
+            skill.effect = effect;
+            return skill;
         }
 
         /// <summary>
@@ -132,10 +117,10 @@ namespace ArcadiaOnline.Combat
 
             SkillData skill = equippedSkills[skillIndex];
 
-            // Check level requirement
-            if (levelUpSystem != null && levelUpSystem.CurrentLevel < skill.levelRequired)
+            // Check level
+            if (levelUpSystem != null && levelUpSystem.CurrentLevel < skill.levelRequirement)
             {
-                Debug.Log($"[Skill] Level too low! Need level {skill.levelRequired}");
+                Debug.Log($"[Skill] Level too low! Need level {skill.levelRequirement}");
                 return false;
             }
 
@@ -153,7 +138,7 @@ namespace ArcadiaOnline.Combat
                 return false;
             }
 
-            // Execute skill
+            // Execute
             ExecuteSkill(skill, target);
 
             // Start cooldown
@@ -169,76 +154,46 @@ namespace ArcadiaOnline.Combat
         {
             Debug.Log($"[Skill] Using {skill.skillName}!");
 
-            switch (skill.skillType)
+            switch (skill.effect)
             {
-                case SkillType.Physical:
-                    ExecutePhysicalSkill(skill, target);
+                case SkillEffect.Damage:
+                    ExecuteDamageSkill(skill, target);
                     break;
-                case SkillType.Magical:
-                    ExecuteMagicalSkill(skill, target);
-                    break;
-                case SkillType.Heal:
+                case SkillEffect.Heal:
                     ExecuteHealSkill(skill);
                     break;
-                case SkillType.Buff:
+                case SkillEffect.Buff:
                     ExecuteBuffSkill(skill);
                     break;
             }
 
-            // Play skill sound
+            // Play sound
             if (Managers.JobSFXManager.Instance != null)
             {
                 Managers.JobSFXManager.Instance.PlaySkill("male");
             }
 
-            // Spawn skill effect
-            SpawnSkillEffect(skill.skillType, target);
+            // Spawn effect
+            SpawnSkillEffect(skill.effect, target);
         }
 
         /// <summary>
-        /// Execute physical skill.
+        /// Execute damage skill.
         /// </summary>
-        private void ExecutePhysicalSkill(SkillData skill, Transform target)
+        private void ExecuteDamageSkill(SkillData skill, Transform target)
         {
             if (target == null) return;
 
-            // Get player ATK
-            float playerATK = 10f;
-            PlayerStats playerStats = GetComponent<PlayerStats>();
+            // Get base ATK or MATK
+            float baseDamage = 10f;
             if (playerStats != null)
             {
-                playerATK = playerStats.BaseStats.atk;
+                baseDamage = skill.damageType == DamageType.Physical
+                    ? playerStats.BaseStats.atk
+                    : playerStats.BaseStats.matk;
             }
 
-            // Calculate damage
-            float totalDamage = playerATK + skill.damage;
-
-            // Apply to target
-            SimpleMonsterAI monster = target.GetComponent<SimpleMonsterAI>();
-            if (monster != null)
-            {
-                bool isCritical = Random.Range(0f, 1f) < 0.15f; // 15% crit chance for skills
-                monster.TakeDamage(totalDamage, isCritical);
-            }
-        }
-
-        /// <summary>
-        /// Execute magical skill.
-        /// </summary>
-        private void ExecuteMagicalSkill(SkillData skill, Transform target)
-        {
-            if (target == null) return;
-
-            // Get player MATK
-            float playerMATK = 10f;
-            PlayerStats playerStats = GetComponent<PlayerStats>();
-            if (playerStats != null)
-            {
-                playerMATK = playerStats.BaseStats.matk;
-            }
-
-            // Calculate damage
-            float totalDamage = playerMATK + skill.damage;
+            float totalDamage = baseDamage * skill.damageMultiplier;
 
             // Apply to target
             SimpleMonsterAI monster = target.GetComponent<SimpleMonsterAI>();
@@ -256,7 +211,8 @@ namespace ArcadiaOnline.Combat
         {
             if (levelUpSystem != null)
             {
-                levelUpSystem.Heal(skill.damage);
+                float healAmount = levelUpSystem.MaxHP * 0.3f; // Heal 30% HP
+                levelUpSystem.Heal(healAmount);
             }
         }
 
@@ -265,112 +221,57 @@ namespace ArcadiaOnline.Combat
         /// </summary>
         private void ExecuteBuffSkill(SkillData skill)
         {
-            // Buff implementation (increase ATK temporarily)
             Debug.Log($"[Skill] {skill.skillName} activated! ATK increased for 10 seconds.");
         }
 
         /// <summary>
-        /// Spawn visual effect for skill.
+        /// Spawn visual effect.
         /// </summary>
-        private void SpawnSkillEffect(SkillType type, Transform target)
+        private void SpawnSkillEffect(SkillEffect effect, Transform target)
         {
-            Vector3 spawnPos = transform.position;
+            Vector3 spawnPos = target != null ? target.position : transform.position;
 
-            if (target != null)
+            switch (effect)
             {
-                spawnPos = target.position;
-            }
-
-            switch (type)
-            {
-                case SkillType.Physical:
-                    VFX.SimpleVFXCreator.CreateHitEffect().transform.position = spawnPos + Vector3.up;
+                case SkillEffect.Damage:
+                    SimpleVFXCreator.CreateHitEffect().transform.position = spawnPos + Vector3.up;
                     break;
-                case SkillType.Magical:
-                    VFX.SimpleVFXCreator.CreateSkillEffect().transform.position = spawnPos + Vector3.up;
+                case SkillEffect.Heal:
+                    SimpleVFXCreator.CreateHealEffect().transform.position = spawnPos;
                     break;
-                case SkillType.Heal:
-                    VFX.SimpleVFXCreator.CreateHealEffect().transform.position = spawnPos;
-                    break;
-                case SkillType.Buff:
-                    VFX.SimpleVFXCreator.CreateLevelUpEffect().transform.position = spawnPos;
+                case SkillEffect.Buff:
+                    SimpleVFXCreator.CreateLevelUpEffect().transform.position = spawnPos;
                     break;
             }
         }
 
-        /// <summary>
-        /// Check if skill is on cooldown.
-        /// </summary>
         public bool IsOnCooldown(string skillName)
         {
             return cooldownTimers.ContainsKey(skillName) && cooldownTimers[skillName] > 0;
         }
 
-        /// <summary>
-        /// Get cooldown remaining for skill.
-        /// </summary>
         public float GetCooldownRemaining(string skillName)
         {
             if (cooldownTimers.ContainsKey(skillName))
-            {
                 return Mathf.Max(0, cooldownTimers[skillName]);
-            }
             return 0f;
         }
 
-        /// <summary>
-        /// Start cooldown for skill.
-        /// </summary>
         private void StartCooldown(string skillName, float duration)
         {
             cooldownTimers[skillName] = duration;
         }
 
-        /// <summary>
-        /// Get equipped skills list.
-        /// </summary>
         public List<SkillData> GetEquippedSkills()
         {
             return equippedSkills;
         }
 
-        /// <summary>
-        /// Get skill by index.
-        /// </summary>
         public SkillData GetSkill(int index)
         {
             if (index >= 0 && index < equippedSkills.Count)
-            {
                 return equippedSkills[index];
-            }
             return null;
         }
-    }
-
-    /// <summary>
-    /// Skill data structure.
-    /// </summary>
-    [System.Serializable]
-    public class SkillData
-    {
-        public string skillName;
-        public string description;
-        public SkillType skillType;
-        public float damage;
-        public float mpCost;
-        public float cooldown;
-        public float range;
-        public int levelRequired;
-    }
-
-    /// <summary>
-    /// Skill types.
-    /// </summary>
-    public enum SkillType
-    {
-        Physical,
-        Magical,
-        Heal,
-        Buff
     }
 }
