@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using ArcadiaOnline.Player;
 
 namespace ArcadiaOnline.UI
 {
