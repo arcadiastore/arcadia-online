@@ -329,6 +329,7 @@ namespace ArcadiaOnline.Quest
         private void SelectQuest(QuestData quest)
         {
             selectedQuest = quest;
+            Debug.Log($"[QuestUI] Selected quest: {quest.questName}");
             ShowQuestDetails(quest);
         }
 
@@ -337,9 +338,14 @@ namespace ArcadiaOnline.Quest
         /// </summary>
         private void ShowQuestDetails(QuestData quest)
         {
-            if (detailPanel == null || quest == null) return;
+            if (detailPanel == null || quest == null)
+            {
+                Debug.LogWarning($"[QuestUI] detailPanel: {detailPanel != null}, quest: {quest != null}");
+                return;
+            }
 
             detailPanel.SetActive(true);
+            Debug.Log($"[QuestUI] Showing details for: {quest.questName}");
 
             if (questNameText != null)
             {
@@ -353,10 +359,10 @@ namespace ArcadiaOnline.Quest
 
             if (objectivesText != null)
             {
-                string objText = "";
+                string objText = "Objectives:\n";
                 foreach (var objective in quest.objectives)
                 {
-                    string status = objective.IsComplete() ? "<color=green>[Done]</color>" : "[ ]";
+                    string status = objective.IsComplete() ? "[Done]" : "[ ]";
                     objText += $"{status} {objective.description} ({objective.GetProgressString()})\n";
                 }
                 objectivesText.text = objText;
@@ -364,7 +370,7 @@ namespace ArcadiaOnline.Quest
 
             if (rewardsText != null)
             {
-                string rewardText = "";
+                string rewardText = "Rewards:\n";
                 if (quest.rewards.expReward > 0)
                     rewardText += $"EXP: +{quest.rewards.expReward}\n";
                 if (quest.rewards.goldReward > 0)
@@ -380,12 +386,25 @@ namespace ArcadiaOnline.Quest
         /// </summary>
         private void UpdateButtons(QuestData quest)
         {
-            if (QuestManager.Instance == null) return;
+            if (QuestManager.Instance == null)
+            {
+                Debug.LogWarning("[QuestUI] QuestManager.Instance is null!");
+                return;
+            }
 
             QuestStatus status = QuestManager.Instance.GetQuestStatus(quest.questID);
+            Debug.Log($"[QuestUI] Quest status: {status}");
 
             if (acceptButton != null)
-                acceptButton.gameObject.SetActive(status == QuestStatus.Available);
+            {
+                bool show = status == QuestStatus.Available;
+                acceptButton.gameObject.SetActive(show);
+                Debug.Log($"[QuestUI] Accept button visible: {show}");
+            }
+            else
+            {
+                Debug.LogWarning("[QuestUI] acceptButton is null!");
+            }
 
             if (abandonButton != null)
                 abandonButton.gameObject.SetActive(status == QuestStatus.Active);
@@ -399,9 +418,24 @@ namespace ArcadiaOnline.Quest
         /// </summary>
         private void OnAcceptClicked()
         {
-            if (selectedQuest == null || QuestManager.Instance == null) return;
+            Debug.Log("[QuestUI] Accept button CLICKED!");
 
-            QuestManager.Instance.AcceptQuest(selectedQuest.questID);
+            if (selectedQuest == null)
+            {
+                Debug.LogWarning("[QuestUI] No quest selected!");
+                return;
+            }
+
+            if (QuestManager.Instance == null)
+            {
+                Debug.LogWarning("[QuestUI] QuestManager.Instance is null!");
+                return;
+            }
+
+            Debug.Log($"[QuestUI] Accepting quest: {selectedQuest.questName}");
+            bool result = QuestManager.Instance.AcceptQuest(selectedQuest.questID);
+            Debug.Log($"[QuestUI] Accept result: {result}");
+
             RefreshQuestList();
             ShowQuestDetails(selectedQuest);
         }
