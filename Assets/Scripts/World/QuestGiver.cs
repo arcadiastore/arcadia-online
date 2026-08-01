@@ -91,12 +91,16 @@ namespace ArcadiaOnline.World
                 // Check if quest is active
                 if (QuestManager.Instance.IsQuestActive(currentQuestID))
                 {
-                    // Check if quest is complete
-                    if (QuestManager.Instance.IsQuestComplete(currentQuestID))
+                    // Check if quest is complete (ready to claim)
+                    if (QuestManager.Instance.IsQuestCompleted(currentQuestID))
                     {
-                        // Complete quest
-                        QuestManager.Instance.CompleteQuest(currentQuestID);
-                        Debug.Log($"[QuestGiver] Quest completed: {currentQuestID}");
+                        // Claim reward
+                        bool success = QuestManager.Instance.ClaimReward(currentQuestID);
+                        if (success)
+                        {
+                            Debug.Log($"[QuestGiver] Quest reward claimed: {currentQuestID}");
+                            currentQuestID = null; // Clear current quest
+                        }
                     }
                     else
                     {
@@ -196,17 +200,20 @@ namespace ArcadiaOnline.World
             // Check quest state
             if (!string.IsNullOrEmpty(currentQuestID) && QuestManager.Instance != null)
             {
-                if (QuestManager.Instance.IsQuestComplete(currentQuestID))
+                if (QuestManager.Instance.IsQuestCompleted(currentQuestID))
                 {
-                    rend.material.color = questCompleteColor; // Green = ready to complete
+                    rend.material.color = questCompleteColor; // Green = ready to claim
+                    rend.enabled = true;
                 }
                 else if (QuestManager.Instance.IsQuestActive(currentQuestID))
                 {
                     rend.material.color = questInProgressColor; // White = in progress
+                    rend.enabled = true;
                 }
                 else
                 {
                     rend.material.color = questAvailableColor; // Yellow = available
+                    rend.enabled = true;
                 }
             }
             else
@@ -215,6 +222,7 @@ namespace ArcadiaOnline.World
                 if (GetNextAvailableQuest() != null)
                 {
                     rend.material.color = questAvailableColor;
+                    rend.enabled = true;
                 }
                 else
                 {
