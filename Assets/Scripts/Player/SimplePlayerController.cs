@@ -1,4 +1,5 @@
 using UnityEngine;
+using ArcadiaOnline.Managers;
 
 namespace ArcadiaOnline.Player
 {
@@ -22,6 +23,13 @@ namespace ArcadiaOnline.Player
 
         [Header("Gravity")]
         [SerializeField] private float gravity = -20f;
+
+        [Header("Player Info")]
+        [SerializeField] private string gender = "male"; // male atau female
+
+        [Header("Sound")]
+        [SerializeField] private float footstepInterval = 0.4f; // Interval langkah kaki
+        private float footstepTimer = 0f;
 
         // Components
         private CharacterController controller;
@@ -65,6 +73,9 @@ namespace ArcadiaOnline.Player
 
             if (inputDir.magnitude >= 0.1f)
             {
+                // Play footstep sound
+                HandleFootstepSound(isRunning);
+
                 // Gerak RELATIF terhadap arah kamera
                 Camera cam = Camera.main;
                 if (cam != null)
@@ -136,6 +147,21 @@ namespace ArcadiaOnline.Player
             }
             velocity.y += gravity * Time.deltaTime;
             controller.Move(velocity * Time.deltaTime);
+        }
+
+        private void HandleFootstepSound(bool sprinting)
+        {
+            if (JobSFXManager.Instance == null) return;
+
+            // Interval lebih cepat saat sprint
+            float interval = sprinting ? footstepInterval * 0.6f : footstepInterval;
+
+            footstepTimer += Time.deltaTime;
+            if (footstepTimer >= interval)
+            {
+                footstepTimer = 0f;
+                JobSFXManager.Instance.PlayRun(gender);
+            }
         }
     }
 }
