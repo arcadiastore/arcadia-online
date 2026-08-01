@@ -1,17 +1,20 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ArcadiaOnline.VFX
 {
     /// <summary>
-    /// Spawn damage popup di atas target.
+    /// Damage popup menggunakan Canvas World Space (lebih reliable).
     /// </summary>
     public class DamagePopupSpawner : MonoBehaviour
     {
         public static DamagePopupSpawner Instance { get; private set; }
 
         [Header("Settings")]
-        [SerializeField] private float spawnHeight = 3f; // Tinggi di atas target (lebih tinggi)
-        [SerializeField] private float randomOffset = 0.5f; // Random X/Z offset
+        [SerializeField] private float spawnHeight = 2f;
+        [SerializeField] private float randomOffset = 0.5f;
+        [SerializeField] private float moveSpeed = 2f;
+        [SerializeField] private float lifetime = 1.5f;
 
         void Awake()
         {
@@ -37,50 +40,108 @@ namespace ArcadiaOnline.VFX
                 Random.Range(-randomOffset, randomOffset)
             );
 
-            // Buat GameObject
-            GameObject popupObj = new GameObject("DamagePopup");
-            popupObj.transform.position = spawnPos;
+            // Buat Canvas World Space
+            GameObject canvasObj = new GameObject("DamageCanvas");
+            canvasObj.transform.position = spawnPos;
 
-            // Tambah TextMesh
-            TextMesh textMesh = popupObj.AddComponent<TextMesh>();
-            textMesh.anchor = TextAnchor.MiddleCenter;
-            textMesh.alignment = TextAlignment.Center;
+            Canvas canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.sortingOrder = 100; // Di atas semua
 
-            // Set font
-            textMesh.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (textMesh.font == null)
-            {
-                textMesh.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            }
+            CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+            scaler.dynamicPixelsPerUnit = 100;
 
-            // Set material untuk font
-            Renderer renderer = popupObj.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                renderer.material = new Material(Shader.Find("GUI/Text Shader"));
-            }
+            // Buat Text
+            GameObject textObj = new GameObject("DamageText");
+            textObj.transform.SetParent(canvasObj.transform, false);
 
-            // Set warna dan ukuran
+            RectTransform rectTransform = textObj.AddComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(200, 50);
+            rectTransform.anchoredPosition = Vector2.zero;
+
+            Text text = textObj.AddComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 30;
+            text.alignment = TextAnchor.MiddleCenter;
+
+            // Set warna dan text
             if (isCritical)
             {
-                textMesh.text = Mathf.CeilToInt(damage).ToString() + "!";
-                textMesh.color = new Color(0.6f, 0f, 0.8f); // Ungu
-                textMesh.characterSize = 0.15f;
-                textMesh.fontStyle = FontStyle.Bold;
+                text.text = Mathf.CeilToInt(damage).ToString() + "!";
+                text.color = new Color(0.6f, 0f, 0.8f); // Ungu
+                text.fontSize = 40;
+                text.fontStyle = FontStyle.Bold;
             }
             else
             {
-                textMesh.text = Mathf.CeilToInt(damage).ToString();
-                textMesh.color = Color.red;
-                textMesh.characterSize = 0.1f;
-                textMesh.fontStyle = FontStyle.Bold;
+                text.text = Mathf.CeilToInt(damage).ToString();
+                text.color = Color.red;
+                text.fontSize = 30;
+                text.fontStyle = FontStyle.Bold;
             }
 
-            // Tambah script DamagePopup
-            DamagePopup popup = popupObj.AddComponent<DamagePopup>();
-            popup.Setup(damage, isCritical);
+            // Tambah script untuk animasi
+            DamagePopupAnim anim = canvasObj.AddComponent<DamagePopupAnim>();
+            anim.Setup(text, moveSpeed, lifetime);
+
+            // Face camera
+            if (Camera.main != null)
+            {
+                canvasObj.transform.LookAt(Camera.main.transform);
+                canvasObj.transform.Rotate(0, 180, 0);
+            }
 
             Debug.Log($"[DamagePopup] Spawned: {damage} (Critical: {isCritical})");
+        }
+    }
+
+    /// <summary>
+    /// Animasi untuk damage popup.
+    /// </summary>
+    public class DamagePopupAnim : MonoBehaviour
+    {
+        private Text text;
+        private float moveSpeed;
+        private float lifetime;
+        private float elapsed = 0f;
+        private Color startColor;
+
+        public void Setup(Text text, float moveSpeed, float lifetime)
+        {
+            this.text = text;
+            this.moveSpeed = moveSpeed;
+            this.lifetime = lifetime;
+            this.startColor = text.color;
+        }
+
+        void Update()
+        {
+            elapsed += Time.deltaTime;
+
+            // Bergerak ke atas
+            transform.position += Vector3.up * (moveSpeed * Time.deltaTime);
+
+            // Face camera terus
+            if (Camera.main != null)
+            {
+                transform.LookAt(Camera.main.transform);
+                transform.Rotate(0, 180, 0);
+            }
+
+            // Fade out
+            float fadeProgress = elapsed / lifetime;
+            if (fadeProgress < 1f && text != null)
+            {
+                Color c = startColor;
+                c.a = 1f - fadeProgress;
+                text.color = c;
+            }
+
+            // Destroy setelah lifetime
+            if (elapsed >= lifetime)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }
