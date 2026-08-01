@@ -145,6 +145,15 @@ namespace ArcadiaOnline.Quest
         }
 
         /// <summary>
+        /// Set active tab.
+        /// </summary>
+        private void SetTab(int tab)
+        {
+            currentTab = tab;
+            RefreshQuestList();
+        }
+
+        /// <summary>
         /// Show quest panel.
         /// </summary>
         private void ShowPanel()
