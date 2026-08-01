@@ -2,6 +2,10 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using ArcadiaOnline.Player;
+using ArcadiaOnline.Equipment;
+using ArcadiaOnline.Inventory;
+using ArcadiaOnline.Shop;
 
 namespace ArcadiaOnline.Save
 {
