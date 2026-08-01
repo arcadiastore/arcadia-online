@@ -6,11 +6,13 @@ using ArcadiaOnline.VFX;
 namespace ArcadiaOnline.Monster
 {
     /// <summary>
-    /// Monster AI sederhana: Patrol → Chase → Attack. Bisa di-klik untuk diserang.
+    /// Monster AI: Patrol → Chase → Attack. Bisa di-klik untuk diserang.
+    /// HP regen saat kembali patrol.
     /// </summary>
     public class SimpleMonsterAI : MonoBehaviour
     {
         [Header("Stats")]
+        [SerializeField] private string monsterName = "Monster";
         [SerializeField] private float maxHP = 100f;
         [SerializeField] private float attack = 10f;
         [SerializeField] private float defense = 2f;
@@ -25,6 +27,10 @@ namespace ArcadiaOnline.Monster
         [Header("Attack")]
         [SerializeField] private float attackCooldown = 1.5f;
 
+        [Header("HP Regen")]
+        [SerializeField] private float regenRate = 5f; // HP per detik saat patrol
+        [SerializeField] private float regenDelay = 3f; // Delay sebelum regen mulai
+
         [Header("EXP")]
         [SerializeField] private int expReward = 25;
 
@@ -33,6 +39,7 @@ namespace ArcadiaOnline.Monster
         private AIState currentState = AIState.Idle;
         private float currentHP;
         private bool isDead = false;
+        private float regenTimer;
 
         // Patrol
         private Vector3 spawnPosition;
@@ -46,6 +53,14 @@ namespace ArcadiaOnline.Monster
         // References
         private Renderer meshRenderer;
         private Color originalColor;
+
+        // === PUBLIC PROPERTIES ===
+        public string MonsterName => monsterName;
+        public float CurrentHP => currentHP;
+        public float MaxHP => maxHP;
+        public float HPPercent => currentHP / maxHP;
+        public bool IsChasing => currentState == AIState.Chase || currentState == AIState.Attack;
+        public bool IsDead => isDead;
 
         void Awake()
         {
@@ -62,6 +77,7 @@ namespace ArcadiaOnline.Monster
         {
             currentState = AIState.Patrol;
             SetNewPatrolTarget();
+            regenTimer = regenDelay;
         }
 
         void Update()
@@ -77,18 +93,42 @@ namespace ArcadiaOnline.Monster
                     break;
                 case AIState.Patrol:
                     UpdatePatrol();
+                    UpdateHPRegen();
                     break;
                 case AIState.Chase:
                     UpdateChase();
+                    regenTimer = regenDelay; // Reset regen timer saat chase
                     break;
                 case AIState.Attack:
                     UpdateAttack();
+                    regenTimer = regenDelay; // Reset regen timer saat attack
                     break;
             }
 
             if (attackTimer > 0)
             {
                 attackTimer -= Time.deltaTime;
+            }
+        }
+
+        /// <summary>
+        /// HP Regeneration saat patrol/idle.
+        /// </summary>
+        private void UpdateHPRegen()
+        {
+            if (currentHP >= maxHP) return;
+
+            regenTimer -= Time.deltaTime;
+            if (regenTimer <= 0)
+            {
+                // Regen HP
+                currentHP = Mathf.Min(maxHP, currentHP + regenRate * Time.deltaTime);
+
+                // Update UI jika ada
+                if (UI.MonsterInfoUI.Instance != null)
+                {
+                    UI.MonsterInfoUI.Instance.OnMonsterDamaged(this);
+                }
             }
         }
 
@@ -129,6 +169,7 @@ namespace ArcadiaOnline.Monster
                 {
                     currentState = AIState.Patrol;
                     SetNewPatrolTarget();
+                    regenTimer = regenDelay; // Mulai hitung regen
                 }
             }
         }
@@ -214,6 +255,12 @@ namespace ArcadiaOnline.Monster
         {
             if (isDead) return;
 
+            // Show monster info UI
+            if (UI.MonsterInfoUI.Instance != null)
+            {
+                UI.MonsterInfoUI.Instance.ShowMonsterInfo(this);
+            }
+
             // Cari player
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player == null)
@@ -223,7 +270,7 @@ namespace ArcadiaOnline.Monster
 
             if (player == null) return;
 
-            // Ambil damage dari player (default 15 jika tidak ada PlayerStats)
+            // Ambil damage dari player
             float rawDamage = 15f;
             PlayerStats playerStats = player.GetComponent<PlayerStats>();
             if (playerStats != null)
@@ -250,6 +297,9 @@ namespace ArcadiaOnline.Monster
         public void TakeDamage(float rawDamage, bool isCritical = false)
         {
             if (isDead) return;
+
+            // Reset regen timer saat terkena damage
+            regenTimer = regenDelay;
 
             // Trigger battle BGM
             if (BattleBGMManager.Instance != null)
@@ -287,6 +337,12 @@ namespace ArcadiaOnline.Monster
                 JobSFXManager.Instance.PlayHit("male");
             }
 
+            // Update monster info UI
+            if (UI.MonsterInfoUI.Instance != null)
+            {
+                UI.MonsterInfoUI.Instance.OnMonsterDamaged(this);
+            }
+
             // Chase player setelah diserang
             if (playerTarget != null)
             {
@@ -320,6 +376,12 @@ namespace ArcadiaOnline.Monster
         {
             isDead = true;
             currentState = AIState.Dead;
+
+            // Hide monster info UI
+            if (UI.MonsterInfoUI.Instance != null)
+            {
+                UI.MonsterInfoUI.Instance.HideMonsterInfo();
+            }
 
             // Beri EXP ke player
             GiveEXPToPlayer();
