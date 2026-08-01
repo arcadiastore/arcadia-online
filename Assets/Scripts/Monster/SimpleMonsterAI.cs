@@ -1,6 +1,7 @@
 using UnityEngine;
 using ArcadiaOnline.Player;
 using ArcadiaOnline.Managers;
+using ArcadiaOnline.VFX;
 
 namespace ArcadiaOnline.Monster
 {
@@ -222,12 +223,12 @@ namespace ArcadiaOnline.Monster
 
             if (player == null) return;
 
-            // Ambil damage dari player
-            float rawDamage = 15f; // Default
+            // Ambil damage dari player (default 15 jika tidak ada PlayerStats)
+            float rawDamage = 15f;
             PlayerStats playerStats = player.GetComponent<PlayerStats>();
-            if (playerStats != null)
+            if (playerStats != null && playerStats.BaseStats != null)
             {
-                rawDamage = playerStats.ATK;
+                rawDamage = playerStats.BaseStats.atk;
             }
 
             // Hitung critical (10% chance)
@@ -236,10 +237,10 @@ namespace ArcadiaOnline.Monster
             // Terima damage
             TakeDamage(rawDamage, isCritical);
 
-            // Play attack sound
+            // Play hit sound
             if (JobSFXManager.Instance != null)
             {
-                JobSFXManager.Instance.PlayAttack("male");
+                JobSFXManager.Instance.PlayHit("male");
             }
         }
 
