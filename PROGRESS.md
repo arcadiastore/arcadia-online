@@ -9,7 +9,7 @@
 | Fase | Status | Progress |
 |------|--------|----------|
 | Fase 0: Dokumentasi | ✅ SELESAI | 100% |
-| Fase 1: Prototipe | 🔄 DALAM PROSES | 60% |
+| Fase 1: Prototipe | 🔄 DALAM PROSES | 70% |
 | Fase 2: Vertical Slice | ⏳ BELUM MULAI | 0% |
 
 ---
@@ -83,12 +83,13 @@
 - [x] Test: HP/MP bar di UI
 
 ### Belum Dibuat (Next Steps)
-- [ ] Prefab Player
-- [ ] Prefab Monster (test dummy)
-- [ ] Scene Fase 1 (test arena)
-- [ ] UI Prefab (HUD)
+- [x] Prefab Monster (test dummy)
+- [x] Scene Fase 1 (test arena)
+- [ ] UI Prefab (HUD) - sudah ada SimpleHUD
 - [ ] Material cel-shader dasar
 - [ ] Animasi dasar (idle, walk, run, attack)
+- [ ] Particle effect (hit, death)
+- [ ] Sound effect (hit, death, walk)
 
 ---
 
