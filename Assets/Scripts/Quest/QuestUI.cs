@@ -409,7 +409,7 @@ namespace ArcadiaOnline.Quest
             // Create tabs
             CreateTabs();
 
-            // Create quest list
+            // Create quest list parent
             questListParent = new GameObject("QuestList").transform;
             questListParent.SetParent(questPanel.transform, false);
 
@@ -419,6 +419,16 @@ namespace ArcadiaOnline.Quest
             listRect.offsetMin = new Vector2(10, 10);
             listRect.offsetMax = new Vector2(-5, -40);
 
+            // Add VerticalLayoutGroup
+            VerticalLayoutGroup layout = questListParent.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 5;
+            layout.padding = new RectOffset(5, 5, 5, 5);
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            // Create quest item prefab (runtime)
+            CreateQuestItemPrefab();
+
             // Create detail panel
             CreateDetailPanel();
 
@@ -426,6 +436,50 @@ namespace ArcadiaOnline.Quest
             SetupButtons();
 
             Debug.Log("[QuestUI] Quest UI created!");
+        }
+
+        /// <summary>
+        /// Create quest item prefab at runtime.
+        /// </summary>
+        private void CreateQuestItemPrefab()
+        {
+            questItemPrefab = new GameObject("QuestItemPrefab");
+
+            RectTransform rect = questItemPrefab.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0, 0);
+            rect.anchorMax = new Vector2(1, 0);
+            rect.pivot = new Vector2(0.5f, 1);
+            rect.sizeDelta = new Vector2(0, 50);
+
+            Image bg = questItemPrefab.AddComponent<Image>();
+            bg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+
+            Button button = questItemPrefab.AddComponent<Button>();
+
+            // Quest Name Text
+            GameObject nameObj = new GameObject("QuestName");
+            nameObj.transform.SetParent(questItemPrefab.transform, false);
+
+            RectTransform nameRect = nameObj.AddComponent<RectTransform>();
+            nameRect.anchorMin = new Vector2(0, 0);
+            nameRect.anchorMax = new Vector2(1, 1);
+            nameRect.offsetMin = new Vector2(10, 0);
+            nameRect.offsetMax = new Vector2(-10, 0);
+
+            Text nameText = nameObj.AddComponent<Text>();
+            nameText.text = "Quest Name";
+            nameText.fontSize = 14;
+            nameText.alignment = TextAnchor.MiddleLeft;
+            nameText.color = Color.white;
+            nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Add QuestItemUI component
+            QuestItemUI itemUI = questItemPrefab.AddComponent<QuestItemUI>();
+
+            // Deactivate prefab
+            questItemPrefab.SetActive(false);
+
+            Debug.Log("[QuestUI] Quest item prefab created");
         }
 
         private void CreateTabs()
