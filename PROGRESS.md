@@ -9,7 +9,7 @@
 | Fase | Status | Progress |
 |------|--------|----------|
 | Fase 0: Dokumentasi | ✅ SELESAI | 100% |
-| Fase 1: Prototipe | 🔄 DALAM PROSES | 85% |
+| Fase 1: Prototipe | 🔄 DALAM PROSES | 90% |
 | Fase 2: Vertical Slice | ⏳ BELUM MULAI | 0% |
 
 ---
