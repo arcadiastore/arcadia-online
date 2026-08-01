@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Reflection;
 using ArcadiaOnline.Player;
 using ArcadiaOnline.Equipment;
 using ArcadiaOnline.Inventory;
@@ -18,7 +19,7 @@ namespace ArcadiaOnline.Save
 
         [Header("Save Settings")]
         [SerializeField] private string saveFileName = "save_data.json";
-        [SerializeField] private bool autoSave = true;
+        [SerializeField] private bool autoSaveEnabled = true;
         [SerializeField] private float autoSaveInterval = 300f; // 5 menit
 
         [Header("Save Slots")]
@@ -79,7 +80,7 @@ namespace ArcadiaOnline.Save
         void Update()
         {
             // Auto-save timer
-            if (autoSave)
+            if (autoSaveEnabled)
             {
                 autoSaveTimer += Time.deltaTime;
 
@@ -227,7 +228,7 @@ namespace ArcadiaOnline.Save
         /// <summary>
         /// Auto-save.
         /// </summary>
-        private void AutoSave()
+        public void AutoSave()
         {
             if (showDebug)
             {
@@ -257,15 +258,20 @@ namespace ArcadiaOnline.Save
                 PlayerStats stats = player.GetComponent<PlayerStats>();
                 if (stats != null)
                 {
-                    data.currentHP = stats.CurrentHP;
-                    data.maxHP = stats.MaxHP;
-                    data.currentMP = stats.CurrentMP;
-                    data.maxMP = stats.MaxMP;
-                    data.str = stats.Str;
-                    data.agi = stats.Agi;
-                    data.vit = stats.Vit;
-                    data.intel = stats.Int;
-                    data.luk = stats.Luk;
+                    data.currentHP = (int)stats.CurrentHP;
+                    data.maxHP = (int)stats.MaxHP;
+                    data.currentMP = (int)stats.CurrentMP;
+                    data.maxMP = (int)stats.MaxMP;
+
+                    // Stats dari BaseStats (StatBlock)
+                    if (stats.BaseStats.hp > 0)
+                    {
+                        data.str = (int)stats.BaseStats.atk;
+                        data.agi = (int)stats.BaseStats.spd;
+                        data.vit = (int)stats.BaseStats.def;
+                        data.intel = (int)stats.BaseStats.matk;
+                        data.luk = (int)stats.BaseStats.luk;
+                    }
                 }
 
                 // Level data
@@ -289,18 +295,18 @@ namespace ArcadiaOnline.Save
                 data.inventoryItems = CollectInventoryData();
             }
 
-            // Skill data
-            if (SkillSystem.Instance != null)
-            {
-                data.learnedSkills = CollectSkillData();
-            }
+            // Skill data - skip for now (SkillSystem not found)
+            // if (SkillSystem.Instance != null)
+            // {
+            //     data.learnedSkills = CollectSkillData();
+            // }
 
-            // Quest data
-            if (QuestManager.Instance != null)
-            {
-                data.activeQuests = CollectQuestData();
-                data.completedQuests = CollectCompletedQuests();
-            }
+            // Quest data - skip for now (QuestManager not found)
+            // if (QuestManager.Instance != null)
+            // {
+            //     data.activeQuests = CollectQuestData();
+            //     data.completedQuests = CollectCompletedQuests();
+            // }
 
             // Gold
             if (ShopManager.Instance != null)
@@ -338,45 +344,6 @@ namespace ArcadiaOnline.Save
         }
 
         /// <summary>
-        /// Collect skill data.
-        /// </summary>
-        private List<SkillSaveData> CollectSkillData()
-        {
-            List<SkillSaveData> skillList = new List<SkillSaveData>();
-
-            // TODO: Implement with SkillSystem
-            // For now, return empty list
-
-            return skillList;
-        }
-
-        /// <summary>
-        /// Collect active quest data.
-        /// </summary>
-        private List<QuestSaveData> CollectQuestData()
-        {
-            List<QuestSaveData> questList = new List<QuestSaveData>();
-
-            // TODO: Implement with QuestManager
-            // For now, return empty list
-
-            return questList;
-        }
-
-        /// <summary>
-        /// Collect completed quest IDs.
-        /// </summary>
-        private List<string> CollectCompletedQuests()
-        {
-            List<string> completedList = new List<string>();
-
-            // TODO: Implement with QuestManager
-            // For now, return empty list
-
-            return completedList;
-        }
-
-        /// <summary>
         /// Apply save data ke game systems.
         /// </summary>
         private void ApplySaveData(SaveData data)
@@ -388,21 +355,21 @@ namespace ArcadiaOnline.Save
                 // Position
                 player.transform.position = new Vector3(data.posX, data.posY, data.posZ);
 
-                // Player stats
+                // Player stats - use reflection to set private fields
                 PlayerStats stats = player.GetComponent<PlayerStats>();
                 if (stats != null)
                 {
-                    stats.SetHP(data.currentHP);
-                    stats.SetMP(data.currentMP);
-                    stats.SetStats(data.str, data.agi, data.vit, data.intel, data.luk);
+                    // Use reflection to set _currentHP and _currentMP
+                    SetPrivateField(stats, "_currentHP", (float)data.currentHP);
+                    SetPrivateField(stats, "_currentMP", (float)data.currentMP);
                 }
 
-                // Level data
+                // Level data - use reflection
                 LevelUpSystem levelSystem = player.GetComponent<LevelUpSystem>();
                 if (levelSystem != null)
                 {
-                    levelSystem.SetLevel(data.playerLevel);
-                    levelSystem.SetEXP(data.playerEXP);
+                    SetPrivateField(levelSystem, "currentLevel", data.playerLevel);
+                    SetPrivateField(levelSystem, "currentEXP", data.playerEXP);
                 }
             }
 
@@ -416,26 +383,6 @@ namespace ArcadiaOnline.Save
             if (InventoryManager.Instance != null && data.inventoryItems != null)
             {
                 ApplyInventoryData(data.inventoryItems);
-            }
-
-            // Skill data
-            if (SkillSystem.Instance != null && data.learnedSkills != null)
-            {
-                ApplySkillData(data.learnedSkills);
-            }
-
-            // Quest data
-            if (QuestManager.Instance != null)
-            {
-                if (data.activeQuests != null)
-                {
-                    ApplyQuestData(data.activeQuests);
-                }
-
-                if (data.completedQuests != null)
-                {
-                    ApplyCompletedQuests(data.completedQuests);
-                }
             }
 
             // Gold
@@ -462,27 +409,35 @@ namespace ArcadiaOnline.Save
         }
 
         /// <summary>
-        /// Apply skill data.
+        /// Set private field via reflection.
         /// </summary>
-        private void ApplySkillData(List<SkillSaveData> skillList)
+        private void SetPrivateField(object obj, string fieldName, object value)
         {
-            // TODO: Implement with SkillSystem
-        }
+            Type type = obj.GetType();
+            FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 
-        /// <summary>
-        /// Apply quest data.
-        /// </summary>
-        private void ApplyQuestData(List<QuestSaveData> questList)
-        {
-            // TODO: Implement with QuestManager
-        }
+            if (field == null)
+            {
+                // Try parent class
+                field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+            }
 
-        /// <summary>
-        /// Apply completed quests.
-        /// </summary>
-        private void ApplyCompletedQuests(List<string> completedQuests)
-        {
-            // TODO: Implement with QuestManager
+            if (field != null)
+            {
+                field.SetValue(obj, value);
+
+                if (showDebug)
+                {
+                    Debug.Log($"[SaveManager] Set {fieldName} = {value}");
+                }
+            }
+            else
+            {
+                if (showDebug)
+                {
+                    Debug.LogWarning($"[SaveManager] Field not found: {fieldName}");
+                }
+            }
         }
 
         /// <summary>
