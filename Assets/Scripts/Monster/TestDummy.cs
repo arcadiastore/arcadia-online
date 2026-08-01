@@ -1,4 +1,5 @@
 using UnityEngine;
+using ArcadiaOnline.Managers;
 
 namespace ArcadiaOnline.Monster
 {
@@ -71,6 +72,12 @@ namespace ArcadiaOnline.Monster
         {
             if (isDead) return;
 
+            // Trigger battle BGM saat pertama kali diserang
+            if (BattleBGMManager.Instance != null)
+            {
+                BattleBGMManager.Instance.EnterBattle();
+            }
+
             // Hitung damage dengan defense
             float damage = Mathf.Max(1, rawDamage - defense);
             damage *= Random.Range(0.9f, 1.1f); // Random ±10%
@@ -138,6 +145,12 @@ namespace ArcadiaOnline.Monster
         {
             isDead = true;
             Debug.Log("[Dummy] MATI!");
+
+            // Exit battle - kembali ke map BGM
+            if (BattleBGMManager.Instance != null)
+            {
+                BattleBGMManager.Instance.ExitBattle();
+            }
 
             // Efek mati: scale down ke 0
             StartCoroutine(DeathEffect());
