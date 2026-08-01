@@ -57,12 +57,6 @@ namespace ArcadiaOnline.Quest
                 CreateQuestUI();
             }
 
-            // Hide panel by default
-            if (questPanel != null)
-            {
-                questPanel.SetActive(false);
-            }
-
             // Register events
             if (QuestManager.Instance != null)
             {
@@ -74,6 +68,12 @@ namespace ArcadiaOnline.Quest
 
             // Setup buttons
             SetupButtons();
+
+            // Hide panel by default
+            if (questPanel != null)
+            {
+                questPanel.SetActive(false);
+            }
         }
 
         void Update()
