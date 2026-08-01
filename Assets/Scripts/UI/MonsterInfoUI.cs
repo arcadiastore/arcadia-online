@@ -6,7 +6,7 @@ namespace ArcadiaOnline.UI
 {
     /// <summary>
     /// UI yang menampilkan info monster saat diserang.
-    /// Muncul saat klik monster, hilang saat monster kembali patrol.
+    /// Pakai Slider untuk HP bar.
     /// </summary>
     public class MonsterInfoUI : MonoBehaviour
     {
@@ -15,11 +15,11 @@ namespace ArcadiaOnline.UI
         [Header("UI Elements")]
         [SerializeField] private GameObject monsterInfoPanel;
         [SerializeField] private Text monsterNameText;
-        [SerializeField] private Image monsterHPBar;
+        [SerializeField] private Slider monsterHPSlider; // Pakai Slider!
         [SerializeField] private Text monsterHPText;
 
         [Header("Settings")]
-        [SerializeField] private float hideDelay = 3f; // Delay sebelum hide setelah monster stop chase
+        [SerializeField] private float hideDelay = 3f;
 
         private SimpleMonsterAI currentTarget;
         private float hideTimer;
@@ -39,7 +39,6 @@ namespace ArcadiaOnline.UI
 
         void Start()
         {
-            // Hide awal
             if (monsterInfoPanel != null)
             {
                 monsterInfoPanel.SetActive(false);
@@ -50,13 +49,10 @@ namespace ArcadiaOnline.UI
         {
             if (!isShowing) return;
 
-            // Update HP bar
             if (currentTarget != null)
             {
                 UpdateHPDisplay();
 
-                // Cek apakah monster masih chase/attack
-                // Jika kembali patrol, start hide timer
                 if (!currentTarget.IsChasing)
                 {
                     hideTimer -= Time.deltaTime;
@@ -67,14 +63,11 @@ namespace ArcadiaOnline.UI
                 }
                 else
                 {
-                    hideTimer = hideDelay; // Reset timer saat masih chase
+                    hideTimer = hideDelay;
                 }
             }
         }
 
-        /// <summary>
-        /// Tampilkan info monster.
-        /// </summary>
         public void ShowMonsterInfo(SimpleMonsterAI monster)
         {
             if (monster == null) return;
@@ -83,7 +76,6 @@ namespace ArcadiaOnline.UI
             isShowing = true;
             hideTimer = hideDelay;
 
-            // Update UI
             if (monsterNameText != null)
             {
                 monsterNameText.text = monster.MonsterName;
@@ -91,38 +83,27 @@ namespace ArcadiaOnline.UI
 
             UpdateHPDisplay();
 
-            // Show panel
             if (monsterInfoPanel != null)
             {
                 monsterInfoPanel.SetActive(true);
             }
-
-            Debug.Log($"[MonsterInfoUI] Show: {monster.MonsterName}");
         }
 
-        /// <summary>
-        /// Update tampilan HP.
-        /// </summary>
         private void UpdateHPDisplay()
         {
             if (currentTarget == null) return;
 
-            // Update HP bar
-            if (monsterHPBar != null)
+            if (monsterHPSlider != null)
             {
-                monsterHPBar.fillAmount = currentTarget.HPPercent;
+                monsterHPSlider.value = currentTarget.HPPercent;
             }
 
-            // Update HP text
             if (monsterHPText != null)
             {
                 monsterHPText.text = $"{Mathf.Ceil(currentTarget.CurrentHP)}/{Mathf.Ceil(currentTarget.MaxHP)}";
             }
         }
 
-        /// <summary>
-        /// Sembunyikan info monster.
-        /// </summary>
         public void HideMonsterInfo()
         {
             isShowing = false;
@@ -132,13 +113,8 @@ namespace ArcadiaOnline.UI
             {
                 monsterInfoPanel.SetActive(false);
             }
-
-            Debug.Log("[MonsterInfoUI] Hide");
         }
 
-        /// <summary>
-        /// Update saat monster terkena damage.
-        /// </summary>
         public void OnMonsterDamaged(SimpleMonsterAI monster)
         {
             if (monster == currentTarget)
