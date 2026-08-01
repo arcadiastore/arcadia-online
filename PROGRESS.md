@@ -9,7 +9,7 @@
 | Fase | Status | Progress |
 |------|--------|----------|
 | Fase 0: Dokumentasi | ✅ SELESAI | 100% |
-| Fase 1: Prototipe | 🔄 DALAM PROSES | 50% |
+| Fase 1: Prototipe | 🔄 DALAM PROSES | 60% |
 | Fase 2: Vertical Slice | ⏳ BELUM MULAI | 0% |
 
 ---
@@ -80,7 +80,7 @@
 - [x] Test: Player bergerak WASD (camera-relative)
 - [x] Test: Camera follow + mouse rotate
 - [x] Test: Sprint + stamina
-- [ ] Test: HP/MP bar di UI
+- [x] Test: HP/MP bar di UI
 
 ### Belum Dibuat (Next Steps)
 - [ ] Prefab Player
