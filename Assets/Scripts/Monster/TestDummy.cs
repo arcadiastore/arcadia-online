@@ -39,7 +39,15 @@ namespace ArcadiaOnline.Monster
 
             if (meshRenderer != null)
             {
-                normalColor = meshRenderer.material.color;
+                try
+                {
+                    normalColor = meshRenderer.material.color;
+                }
+                catch
+                {
+                    // Material tidak punya _Color property, pakai default
+                    normalColor = Color.white;
+                }
             }
         }
 
@@ -86,7 +94,14 @@ namespace ArcadiaOnline.Monster
         {
             if (meshRenderer != null)
             {
-                meshRenderer.material.color = hitColor;
+                try
+                {
+                    meshRenderer.material.color = hitColor;
+                }
+                catch
+                {
+                    // Material tidak support _Color
+                }
                 hitFlashTimer = hitFlashDuration;
             }
         }
@@ -112,9 +127,16 @@ namespace ArcadiaOnline.Monster
             // Visual: make semi-transparent
             if (meshRenderer != null)
             {
-                Color c = meshRenderer.material.color;
-                c.a = 0.3f;
-                meshRenderer.material.color = c;
+                try
+                {
+                    Color c = meshRenderer.material.color;
+                    c.a = 0.3f;
+                    meshRenderer.material.color = c;
+                }
+                catch
+                {
+                    // Material tidak support _Color
+                }
             }
 
             if (respawn)
@@ -141,8 +163,15 @@ namespace ArcadiaOnline.Monster
             // Reset visual
             if (meshRenderer != null)
             {
-                normalColor.a = 1f;
-                meshRenderer.material.color = normalColor;
+                try
+                {
+                    normalColor.a = 1f;
+                    meshRenderer.material.color = normalColor;
+                }
+                catch
+                {
+                    // Material tidak support _Color
+                }
             }
 
             Debug.Log("[Dummy] Respawn!");
@@ -156,7 +185,7 @@ namespace ArcadiaOnline.Monster
             {
                 float playerATK = 20f; // Default ATK untuk test
                 var playerStats = FindAnyObjectByType<Player.PlayerStats>();
-                if (playerStats != null)
+                if (playerStats != null && playerStats.BaseStats.atk > 0)
                 {
                     playerATK = playerStats.BaseStats.atk;
                 }
