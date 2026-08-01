@@ -189,63 +189,89 @@ namespace ArcadiaOnline.Quest
             rect.anchorMin = new Vector2(0, 0);
             rect.anchorMax = new Vector2(1, 0);
             rect.pivot = new Vector2(0.5f, 1);
-            rect.sizeDelta = new Vector2(0, 50);
+            rect.sizeDelta = new Vector2(0, 60);
+
+            // Add LayoutElement for VerticalLayoutGroup
+            LayoutElement layoutElement = item.AddComponent<LayoutElement>();
+            layoutElement.minHeight = 60;
+            layoutElement.preferredHeight = 60;
 
             Image bg = item.AddComponent<Image>();
             bg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
 
             Button button = item.AddComponent<Button>();
 
-            // Quest Name Text
+            // Status Icon (left side)
+            GameObject iconObj = new GameObject("StatusIcon");
+            iconObj.transform.SetParent(item.transform, false);
+
+            RectTransform iconRect = iconObj.AddComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0, 0.2f);
+            iconRect.anchorMax = new Vector2(0, 0.8f);
+            iconRect.offsetMin = new Vector2(8, 0);
+            iconRect.offsetMax = new Vector2(25, 0);
+
+            Image icon = iconObj.AddComponent<Image>();
+            icon.color = GetQuestStatusColor(quest);
+
+            // Quest Name Text (center-left)
             GameObject nameObj = new GameObject("QuestName");
             nameObj.transform.SetParent(item.transform, false);
 
             RectTransform nameRect = nameObj.AddComponent<RectTransform>();
-            nameRect.anchorMin = new Vector2(0, 0);
-            nameRect.anchorMax = new Vector2(1, 1);
-            nameRect.offsetMin = new Vector2(10, 0);
-            nameRect.offsetMax = new Vector2(-10, 0);
+            nameRect.anchorMin = new Vector2(0.05f, 0.5f);
+            nameRect.anchorMax = new Vector2(0.75f, 1);
+            nameRect.offsetMin = new Vector2(5, 0);
+            nameRect.offsetMax = new Vector2(-5, -5);
 
             Text nameText = nameObj.AddComponent<Text>();
             nameText.text = quest.questName;
-            nameText.fontSize = 14;
+            nameText.fontSize = 16;
+            nameText.fontStyle = FontStyle.Bold;
             nameText.alignment = TextAnchor.MiddleLeft;
             nameText.color = Color.white;
             nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            // Level Text
+            // Quest Type Text (below name)
+            GameObject typeObj = new GameObject("QuestType");
+            typeObj.transform.SetParent(item.transform, false);
+
+            RectTransform typeRect = typeObj.AddComponent<RectTransform>();
+            typeRect.anchorMin = new Vector2(0.05f, 0);
+            typeRect.anchorMax = new Vector2(0.75f, 0.5f);
+            typeRect.offsetMin = new Vector2(5, 5);
+            typeRect.offsetMax = new Vector2(-5, 0);
+
+            Text typeText = typeObj.AddComponent<Text>();
+            typeText.text = quest.mainType.ToString();
+            typeText.fontSize = 12;
+            typeText.alignment = TextAnchor.MiddleLeft;
+            typeText.color = new Color(0.7f, 0.7f, 0.7f);
+            typeText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Level Text (right side)
             GameObject levelObj = new GameObject("LevelText");
             levelObj.transform.SetParent(item.transform, false);
 
             RectTransform levelRect = levelObj.AddComponent<RectTransform>();
-            levelRect.anchorMin = new Vector2(0.7f, 0);
+            levelRect.anchorMin = new Vector2(0.75f, 0);
             levelRect.anchorMax = new Vector2(1, 1);
             levelRect.offsetMin = Vector2.zero;
             levelRect.offsetMax = new Vector2(-10, 0);
 
             Text levelText = levelObj.AddComponent<Text>();
             levelText.text = $"Lv.{quest.recommendedLevel}";
-            levelText.fontSize = 12;
+            levelText.fontSize = 14;
+            levelText.fontStyle = FontStyle.Bold;
             levelText.alignment = TextAnchor.MiddleRight;
             levelText.color = Color.yellow;
             levelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            // Status Icon
-            GameObject iconObj = new GameObject("StatusIcon");
-            iconObj.transform.SetParent(item.transform, false);
-
-            RectTransform iconRect = iconObj.AddComponent<RectTransform>();
-            iconRect.anchorMin = new Vector2(0, 0.3f);
-            iconRect.anchorMax = new Vector2(0, 0.7f);
-            iconRect.offsetMin = new Vector2(5, 0);
-            iconRect.offsetMax = new Vector2(20, 0);
-
-            Image icon = iconObj.AddComponent<Image>();
-            icon.color = GetQuestStatusColor(quest);
-
             // Add click listener
             QuestData questRef = quest;
             button.onClick.AddListener(() => SelectQuest(questRef));
+
+            Debug.Log($"[QuestUI] Created quest item: {quest.questName}");
         }
 
         /// <summary>
