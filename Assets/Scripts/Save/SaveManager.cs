@@ -250,9 +250,15 @@ namespace ArcadiaOnline.Save
             if (player != null)
             {
                 // Position
-                data.posX = player.transform.position.x;
-                data.posY = player.transform.position.y;
-                data.posZ = player.transform.position.z;
+                Vector3 pos = player.transform.position;
+                data.posX = pos.x;
+                data.posY = pos.y;
+                data.posZ = pos.z;
+
+                if (showDebug)
+                {
+                    Debug.Log($"[SaveManager] Saving position: ({pos.x:F1}, {pos.y:F1}, {pos.z:F1})");
+                }
 
                 // Player stats
                 PlayerStats stats = player.GetComponent<PlayerStats>();
@@ -262,6 +268,13 @@ namespace ArcadiaOnline.Save
                     data.maxHP = (int)stats.MaxHP;
                     data.currentMP = (int)stats.CurrentMP;
                     data.maxMP = (int)stats.MaxMP;
+                    data.currentStamina = (int)stats.Stamina;
+                    data.maxStamina = 100;
+
+                    if (showDebug)
+                    {
+                        Debug.Log($"[SaveManager] Saving stats: HP={data.currentHP}/{data.maxHP}, MP={data.currentMP}/{data.maxMP}");
+                    }
 
                     // Stats dari BaseStats (StatBlock)
                     if (stats.BaseStats.hp > 0)
@@ -280,6 +293,11 @@ namespace ArcadiaOnline.Save
                 {
                     data.playerLevel = levelSystem.CurrentLevel;
                     data.playerEXP = levelSystem.CurrentEXP;
+
+                    if (showDebug)
+                    {
+                        Debug.Log($"[SaveManager] Saving level: {data.playerLevel}, EXP: {data.playerEXP}");
+                    }
                 }
             }
 
@@ -294,19 +312,6 @@ namespace ArcadiaOnline.Save
             {
                 data.inventoryItems = CollectInventoryData();
             }
-
-            // Skill data - skip for now (SkillSystem not found)
-            // if (SkillSystem.Instance != null)
-            // {
-            //     data.learnedSkills = CollectSkillData();
-            // }
-
-            // Quest data - skip for now (QuestManager not found)
-            // if (QuestManager.Instance != null)
-            // {
-            //     data.activeQuests = CollectQuestData();
-            //     data.completedQuests = CollectCompletedQuests();
-            // }
 
             // Gold
             if (ShopManager.Instance != null)
@@ -337,8 +342,30 @@ namespace ArcadiaOnline.Save
         {
             List<InventorySaveData> inventoryList = new List<InventorySaveData>();
 
-            // TODO: Implement with InventoryManager
-            // For now, return empty list
+            if (InventoryManager.Instance == null) return inventoryList;
+
+            // Get all items from inventory
+            var items = InventoryManager.Instance.GetAllItems();
+            if (items != null)
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (items[i] != null && items[i].ItemData != null)
+                    {
+                        InventorySaveData saveItem = new InventorySaveData();
+                        saveItem.itemID = items[i].ItemData.id;
+                        saveItem.itemName = items[i].ItemData.itemName;
+                        saveItem.quantity = items[i].Quantity;
+                        saveItem.slotIndex = i;
+                        inventoryList.Add(saveItem);
+                    }
+                }
+            }
+
+            if (showDebug)
+            {
+                Debug.Log($"[SaveManager] Saving {inventoryList.Count} inventory items");
+            }
 
             return inventoryList;
         }
@@ -352,8 +379,14 @@ namespace ArcadiaOnline.Save
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
-                // Position
-                player.transform.position = new Vector3(data.posX, data.posY, data.posZ);
+                // Position - RESTORE POSITION
+                Vector3 savedPos = new Vector3(data.posX, data.posY, data.posZ);
+                player.transform.position = savedPos;
+
+                if (showDebug)
+                {
+                    Debug.Log($"[SaveManager] Restoring position: ({savedPos.x:F1}, {savedPos.y:F1}, {savedPos.z:F1})");
+                }
 
                 // Player stats - use reflection to set private fields
                 PlayerStats stats = player.GetComponent<PlayerStats>();
@@ -362,6 +395,12 @@ namespace ArcadiaOnline.Save
                     // Use reflection to set _currentHP and _currentMP
                     SetPrivateField(stats, "_currentHP", (float)data.currentHP);
                     SetPrivateField(stats, "_currentMP", (float)data.currentMP);
+                    SetPrivateField(stats, "_stamina", (float)data.currentStamina);
+
+                    if (showDebug)
+                    {
+                        Debug.Log($"[SaveManager] Restoring stats: HP={data.currentHP}, MP={data.currentMP}, Stamina={data.currentStamina}");
+                    }
                 }
 
                 // Level data - use reflection
@@ -370,6 +409,34 @@ namespace ArcadiaOnline.Save
                 {
                     SetPrivateField(levelSystem, "currentLevel", data.playerLevel);
                     SetPrivateField(levelSystem, "currentEXP", data.playerEXP);
+
+                    if (showDebug)
+                    {
+                        Debug.Log($"[SaveManager] Restoring level: {data.playerLevel}, EXP: {data.playerEXP}");
+                    }
+                }
+
+                // Disable then re-enable controller to apply position
+                MonoBehaviour[] scripts = player.GetComponents<MonoBehaviour>();
+                foreach (MonoBehaviour script in scripts)
+                {
+                    if (script.GetType().Name.Contains("PlayerController"))
+                    {
+                        script.enabled = false;
+                        script.enabled = true;
+                        break;
+                    }
+                }
+            }
+
+            // Inventory - CLEAR FIRST to prevent duplication
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.ClearInventory();
+
+                if (data.inventoryItems != null)
+                {
+                    ApplyInventoryData(data.inventoryItems);
                 }
             }
 
@@ -377,12 +444,6 @@ namespace ArcadiaOnline.Save
             if (EquipmentManager.Instance != null && data.equippedItems != null)
             {
                 ApplyEquipmentData(data.equippedItems);
-            }
-
-            // Inventory data
-            if (InventoryManager.Instance != null && data.inventoryItems != null)
-            {
-                ApplyInventoryData(data.inventoryItems);
             }
 
             // Gold
@@ -405,7 +466,20 @@ namespace ArcadiaOnline.Save
         /// </summary>
         private void ApplyInventoryData(List<InventorySaveData> inventoryList)
         {
-            // TODO: Implement with InventoryManager
+            if (InventoryManager.Instance == null) return;
+
+            foreach (InventorySaveData item in inventoryList)
+            {
+                if (!string.IsNullOrEmpty(item.itemID))
+                {
+                    InventoryManager.Instance.AddItem(item.itemID, item.quantity);
+                }
+            }
+
+            if (showDebug)
+            {
+                Debug.Log($"[SaveManager] Restored {inventoryList.Count} inventory items");
+            }
         }
 
         /// <summary>
