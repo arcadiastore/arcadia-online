@@ -402,7 +402,7 @@ namespace ArcadiaOnline.Inventory
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i] != null && items[i].ItemData != null &&
-                    items[i].ItemData.itemID == itemID)
+                    items[i].ItemData.id == itemID)
                 {
                     // Stack to existing
                     if (items[i].CanStack())
@@ -416,10 +416,10 @@ namespace ArcadiaOnline.Inventory
 
             // Create new ItemData
             ItemData newData = ScriptableObject.CreateInstance<ItemData>();
-            newData.itemID = itemID;
+            newData.id = itemID;
             newData.itemName = itemID;
             newData.isStackable = true;
-            newData.maxStack = 99;
+            newData.maxStackSize = 99;
 
             return AddItem(newData, quantity);
         }
@@ -434,7 +434,7 @@ namespace ArcadiaOnline.Inventory
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i] != null && items[i].ItemData != null &&
-                    items[i].ItemData.itemID == itemID)
+                    items[i].ItemData.id == itemID)
                 {
                     items[i].RemoveQuantity(quantity);
 
@@ -462,7 +462,7 @@ namespace ArcadiaOnline.Inventory
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i] != null && items[i].ItemData != null &&
-                    items[i].ItemData.itemID == itemID)
+                    items[i].ItemData.id == itemID)
                 {
                     total += items[i].Quantity;
                 }
@@ -482,7 +482,7 @@ namespace ArcadiaOnline.Inventory
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i] != null && items[i].ItemData != null &&
-                    items[i].ItemData.itemID == itemID)
+                    items[i].ItemData.id == itemID)
                 {
                     total += items[i].Quantity;
                 }
