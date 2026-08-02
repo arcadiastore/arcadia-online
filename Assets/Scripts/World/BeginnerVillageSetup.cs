@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ArcadiaOnline.Quest;
 using ArcadiaOnline.Dialogue;
 using ArcadiaOnline.Shop;
+using ArcadiaOnline.Monster;
 
 namespace ArcadiaOnline.World
 {
