@@ -271,11 +271,23 @@ namespace ArcadiaOnline.Monster
             if (player == null) return;
 
             // Ambil damage dari player (GDD: Lv1 Warrior base ATK = 25)
-            float rawDamage = 25f;
+            float rawDamage = 25f;  // Default fallback
             PlayerStats playerStats = player.GetComponent<PlayerStats>();
             if (playerStats != null)
             {
                 rawDamage = playerStats.BaseStats.atk;
+                Debug.Log($"[Combat] Player ATK from PlayerStats: {rawDamage}");
+            }
+            else
+            {
+                Debug.Log("[Combat] PlayerStats not found, using default damage: 25");
+            }
+
+            // Minimum damage guarantee
+            if (rawDamage < 10f)
+            {
+                rawDamage = 25f;  // Force minimum damage
+                Debug.Log("[Combat] Damage too low, forcing to 25");
             }
 
             // Hitung critical (10% chance)

@@ -37,6 +37,20 @@ namespace ArcadiaOnline.Player
             {
                 BaseStats = _job.startingStats;
             }
+            else
+            {
+                // Default stats if no job assigned (GDD: Lv1 Warrior)
+                BaseStats = new StatBlock
+                {
+                    hp = 150f,
+                    mp = 50f,
+                    atk = 25f,      // This is the key - must be high enough
+                    def = 8f,
+                    spd = 10f,
+                    critRate = 0.05f,
+                    critDmg = 1.5f
+                };
+            }
             _currentHP = MaxHP;
             _currentMP = MaxMP;
         }
