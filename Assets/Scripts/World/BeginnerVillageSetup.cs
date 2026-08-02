@@ -478,8 +478,8 @@ namespace ArcadiaOnline.World
             
             // Rewards
             quest.rewards = new QuestReward();
-            quest.rewards.exp = 100;
-            quest.rewards.gold = 50;
+            quest.rewards.expReward = 100;
+            quest.rewards.goldReward = 50;
             quest.rewards.itemIDs = new System.Collections.Generic.List<string>();
             
             // Add to QuestManager
@@ -520,8 +520,8 @@ namespace ArcadiaOnline.World
             quest.objectives.Add(objective);
             
             quest.rewards = new QuestReward();
-            quest.rewards.exp = 200;
-            quest.rewards.gold = 100;
+            quest.rewards.expReward = 200;
+            quest.rewards.goldReward = 100;
             quest.rewards.itemIDs = new System.Collections.Generic.List<string>();
             
             if (QuestManager.Instance != null)
@@ -560,8 +560,8 @@ namespace ArcadiaOnline.World
             quest.objectives.Add(objective);
             
             quest.rewards = new QuestReward();
-            quest.rewards.exp = 500;
-            quest.rewards.gold = 250;
+            quest.rewards.expReward = 500;
+            quest.rewards.goldReward = 250;
             quest.rewards.itemIDs = new System.Collections.Generic.List<string>();
             
             if (QuestManager.Instance != null)
