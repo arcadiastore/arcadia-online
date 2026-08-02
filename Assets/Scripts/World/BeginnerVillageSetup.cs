@@ -437,27 +437,33 @@ namespace ArcadiaOnline.World
             // === GDD: Elder Tetua (Main Quest Giver) ===
             // Quest: "Permintaan Tetua" → Kill 5 Slimes → Return → Unlock Green Forest
             var elder = MakeNPC("Elder Tetua", villageCenter + new Vector3(0, 0, -40), new Color(0.9f, 0.85f, 0.7f));
-            elder.transform.localScale = Vector3.one * 1.1f; // Slightly bigger
+            elder.transform.localScale = Vector3.one * 1.1f;
+            // Add QuestGiver component
+            var questGiver = elder.AddComponent<QuestGiver>();
 
             // === GDD: Blacksmith Pemula ===
             // Sells: Wooden Sword, Leather Armor, Wooden Shield
-            MakeNPC("Blacksmith Budi", villageCenter + new Vector3(-30, 0, 5), new Color(0.7f, 0.4f, 0.3f));
+            var blacksmith = MakeNPC("Blacksmith Budi", villageCenter + new Vector3(-30, 0, 5), new Color(0.7f, 0.4f, 0.3f));
+            // Add ShopTrigger component
+            var blacksmithShop = blacksmith.AddComponent<ShopTrigger>();
 
             // === GDD: Merchant Keliling ===
             // Sells: HP Potion, MP Potion, Antidote, Torch
-            MakeNPC("Merchant Sari", villageCenter + new Vector3(30, 0, 5), new Color(0.4f, 0.7f, 0.4f));
+            var merchant = MakeNPC("Merchant Sari", villageCenter + new Vector3(30, 0, 5), new Color(0.4f, 0.7f, 0.4f));
+            // Add ShopTrigger component
+            var merchantShop = merchant.AddComponent<ShopTrigger>();
 
             // === GDD: Innkeeper ===
             // Rest: Restore HP/MP, Save Game
-            MakeNPC("Innkeeper Rina", villageCenter + new Vector3(5, 0, 35), new Color(0.8f, 0.6f, 0.5f));
+            var innkeeper = MakeNPC("Innkeeper Rina", villageCenter + new Vector3(5, 0, 35), new Color(0.8f, 0.6f, 0.5f));
 
             // === GDD: Village Guard ===
             // Info about forest, warns about dangers
-            MakeNPC("Guard Captain", forestEntrance + new Vector3(10, 0, 5), new Color(0.5f, 0.5f, 0.6f));
+            var guard = MakeNPC("Guard Captain", forestEntrance + new Vector3(10, 0, 5), new Color(0.5f, 0.5f, 0.6f));
 
             // === GDD: Training Master ===
             // Teaches basic combat
-            MakeNPC("Training Master", trainingGround + new Vector3(0, 0, -25), new Color(0.6f, 0.5f, 0.4f));
+            var trainingMaster = MakeNPC("Training Master", trainingGround + new Vector3(0, 0, -25), new Color(0.6f, 0.5f, 0.4f));
 
             // Villagers (10)
             string[] villagerNames = {
@@ -475,11 +481,21 @@ namespace ArcadiaOnline.World
 
         private GameObject MakeNPC(string name, Vector3 pos, Color color)
         {
+            // Create NPC object
             var npc = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            npc.name = name; npc.transform.SetParent(npcParent);
+            npc.name = name; 
+            npc.transform.SetParent(npcParent);
             npc.transform.position = pos;
             npc.GetComponent<Renderer>().material.color = color;
-
+            
+            // Add collider for interaction
+            var col = npc.GetComponent<CapsuleCollider>();
+            if (col == null) col = npc.AddComponent<CapsuleCollider>();
+            
+            // Add DialogueTrigger component (all NPCs can talk)
+            var dialogueTrigger = npc.AddComponent<DialogueTrigger>();
+            
+            // Name label
             var label = new GameObject(name + "_Label");
             label.transform.SetParent(npc.transform);
             label.transform.localPosition = Vector3.up * 2.5f;
@@ -547,12 +563,28 @@ namespace ArcadiaOnline.World
 
         private void MakeMonster(string name, Vector3 pos, Color color, int level, string behavior)
         {
+            // Create monster object
             var m = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            m.name = $"{name}_Lv{level}"; m.transform.SetParent(monsterParent);
+            m.name = $"{name}_Lv{level}"; 
+            m.transform.SetParent(monsterParent);
             m.transform.position = pos;
             m.GetComponent<Renderer>().material.color = color;
+            
+            // Set tag
             try { m.tag = "Enemy"; } catch { m.tag = "Untagged"; }
-
+            
+            // Add collider for click detection (OnMouseDown needs collider)
+            var col = m.GetComponent<SphereCollider>();
+            if (col == null) col = m.AddComponent<SphereCollider>();
+            
+            // Add SimpleMonsterAI component
+            var ai = m.AddComponent<SimpleMonsterAI>();
+            
+            // Set stats based on level
+            // Use reflection to set private fields (or make them public in SimpleMonsterAI)
+            // For now, the default values will work
+            
+            // Name label
             var label = new GameObject($"{name}_Label");
             label.transform.SetParent(m.transform);
             label.transform.localPosition = Vector3.up * 2f;
@@ -567,12 +599,23 @@ namespace ArcadiaOnline.World
 
         private void MakeBoss(string name, Vector3 pos, Color color, int level)
         {
+            // Create boss object (bigger)
             var m = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            m.name = $"BOSS_{name}_Lv{level}"; m.transform.SetParent(monsterParent);
+            m.name = $"BOSS_{name}_Lv{level}"; 
+            m.transform.SetParent(monsterParent);
             m.transform.position = pos;
-            m.transform.localScale = Vector3.one * 3f; // Much bigger
+            m.transform.localScale = Vector3.one * 3f;
             m.GetComponent<Renderer>().material.color = color;
+            
+            // Set tag
             try { m.tag = "Enemy"; } catch { m.tag = "Untagged"; }
+            
+            // Add collider for click detection
+            var col = m.GetComponent<SphereCollider>();
+            if (col == null) col = m.AddComponent<SphereCollider>();
+            
+            // Add SimpleMonsterAI component
+            var ai = m.AddComponent<SimpleMonsterAI>();
 
             // Boss crown (visual indicator)
             var crown = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -582,6 +625,7 @@ namespace ArcadiaOnline.World
             crown.GetComponent<Renderer>().material.color = new Color(1f, 0.84f, 0f); // Gold
             Destroy(crown.GetComponent<Collider>());
 
+            // Boss label
             var label = new GameObject($"BOSS_{name}_Label");
             label.transform.SetParent(m.transform);
             label.transform.localPosition = Vector3.up * 3f;
