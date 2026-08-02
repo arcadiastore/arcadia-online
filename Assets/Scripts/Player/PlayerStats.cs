@@ -44,11 +44,10 @@ namespace ArcadiaOnline.Player
                 {
                     hp = 150f,
                     mp = 50f,
-                    atk = 25f,      // This is the key - must be high enough
+                    atk = 25f,
                     def = 8f,
                     spd = 10f,
-                    critRate = 0.05f,
-                    critDmg = 1.5f
+                    luk = 10f   // LUK affects crit rate/dmg
                 };
             }
             _currentHP = MaxHP;
