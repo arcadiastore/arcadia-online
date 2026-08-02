@@ -16,15 +16,15 @@ namespace ArcadiaOnline.Player
         [SerializeField] private int expToNextLevel = 100;
         [SerializeField] private float expMultiplier = 1.5f; // EXP needed multiplier per level
 
-        [Header("Stat Growth")]
-        [SerializeField] private float baseHP = 100f;
-        [SerializeField] private float hpGrowth = 10f; // HP per level
+        [Header("Stat Growth (GDD Balance)")]
+        [SerializeField] private float baseHP = 150f;      // More survivable
+        [SerializeField] private float hpGrowth = 15f;      // HP per level
         [SerializeField] private float baseMP = 50f;
-        [SerializeField] private float mpGrowth = 5f; // MP per level
-        [SerializeField] private float baseATK = 10f;
-        [SerializeField] private float atkGrowth = 2f; // ATK per level
-        [SerializeField] private float baseDEF = 5f;
-        [SerializeField] private float defGrowth = 1f; // DEF per level
+        [SerializeField] private float mpGrowth = 5f;       // MP per level
+        [SerializeField] private float baseATK = 25f;       // Faster kills (2-3 hit slime)
+        [SerializeField] private float atkGrowth = 3f;      // ATK per level
+        [SerializeField] private float baseDEF = 8f;
+        [SerializeField] private float defGrowth = 2f;      // DEF per level
 
         [Header("Current Stats")]
         [SerializeField] private float currentHP;

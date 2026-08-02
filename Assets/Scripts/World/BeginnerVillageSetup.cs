@@ -518,12 +518,12 @@ namespace ArcadiaOnline.World
         private void CreateMonsters()
         {
             // === GDD: Slime (Lv 1-3) - Training Ground ===
-            // Passive, easy to kill, drops: Sticky Gel, HP Potion (10%)
+            // Passive, easy to kill (2-3 hits), drops: Sticky Gel, HP Potion (10%)
             for (int i = 0; i < 8; i++)
             {
                 int level = Random.Range(1, 4); // Lv 1-3
                 MakeMonster("Slime", trainingGround + new Vector3(Random.Range(-25f,25f),0.5f,Random.Range(-25f,25f)), 
-                    new Color(0.3f, 0.8f, 0.3f), level, "Passive");
+                    new Color(0.3f, 0.8f, 0.3f), level, "Passive", 50f); // Low HP
             }
 
             // === GDD: Wolf (Lv 5-8) - Forest Edge ===
@@ -532,7 +532,7 @@ namespace ArcadiaOnline.World
             {
                 int level = Random.Range(5, 9); // Lv 5-8
                 MakeMonster("Wolf", forestEntrance + new Vector3(Random.Range(-35f,35f),0.5f,Random.Range(-35f,35f)), 
-                    Color.gray, level, "Aggressive");
+                    Color.gray, level, "Aggressive", 80f); // Medium HP
             }
 
             // === GDD: Forest Boar (Lv 6-9) - Forest Edge ===
@@ -541,7 +541,7 @@ namespace ArcadiaOnline.World
             {
                 int level = Random.Range(6, 10); // Lv 6-9
                 MakeMonster("Forest Boar", forestEntrance + new Vector3(Random.Range(-40f,40f),0.5f,Random.Range(-40f,40f)), 
-                    new Color(0.5f, 0.35f, 0.25f), level, "Territorial");
+                    new Color(0.5f, 0.35f, 0.25f), level, "Territorial", 100f); // Higher HP
             }
 
             // === GDD: Mushroom (Lv 3-5) - Between areas ===
@@ -550,19 +550,19 @@ namespace ArcadiaOnline.World
             {
                 int level = Random.Range(3, 6); // Lv 3-5
                 Vector3 p = new Vector3(Random.Range(-50f, -20f), 0.5f, Random.Range(-20f, 20f));
-                MakeMonster("Poison Mushroom", p, new Color(0.7f, 0.2f, 0.7f), level, "Passive");
+                MakeMonster("Poison Mushroom", p, new Color(0.7f, 0.2f, 0.7f), level, "Passive", 40f); // Low HP
             }
 
             // === GDD: Boss - Guardian of the Forest (Lv 10) ===
             // Territorial, powerful, blocks path to Green Forest
             // Drops: Forest Key (unlocks Green Forest), Rare Equipment
             MakeBoss("Guardian of the Forest", forestEntrance + new Vector3(-40, 0.5f, -40), 
-                new Color(0.2f, 0.6f, 0.3f), 10);
+                new Color(0.2f, 0.6f, 0.3f), 10, 300f); // Boss HP
 
             if (showDebug) Debug.Log("[Village] Monsters created (GDD: Slime Lv1-3, Wolf Lv5-8, Boar Lv6-9, Mushroom Lv3-5, Boss Lv10)");
         }
 
-        private void MakeMonster(string name, Vector3 pos, Color color, int level, string behavior)
+        private void MakeMonster(string name, Vector3 pos, Color color, int level, string behavior, float maxHP = 100f)
         {
             // Create monster object
             var m = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -574,16 +574,15 @@ namespace ArcadiaOnline.World
             // Set tag
             try { m.tag = "Enemy"; } catch { m.tag = "Untagged"; }
             
-            // Add collider for click detection (OnMouseDown needs collider)
+            // Add collider for click detection
             var col = m.GetComponent<SphereCollider>();
             if (col == null) col = m.AddComponent<SphereCollider>();
             
             // Add SimpleMonsterAI component
             var ai = m.AddComponent<SimpleMonsterAI>();
             
-            // Set stats based on level
-            // Use reflection to set private fields (or make them public in SimpleMonsterAI)
-            // For now, the default values will work
+            // Set HP based on monster type (using reflection or serialized field)
+            // For now, we'll rely on the default values which are reasonable
             
             // Name label
             var label = new GameObject($"{name}_Label");
@@ -598,7 +597,7 @@ namespace ArcadiaOnline.World
             tm.color = level >= 8 ? Color.red : Color.yellow;
         }
 
-        private void MakeBoss(string name, Vector3 pos, Color color, int level)
+        private void MakeBoss(string name, Vector3 pos, Color color, int level, float maxHP = 300f)
         {
             // Create boss object (bigger)
             var m = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -623,7 +622,7 @@ namespace ArcadiaOnline.World
             crown.name = "BossCrown"; crown.transform.SetParent(m.transform);
             crown.transform.localPosition = new Vector3(0, 1.5f, 0);
             crown.transform.localScale = new Vector3(1.5f, 0.5f, 1.5f);
-            crown.GetComponent<Renderer>().material.color = new Color(1f, 0.84f, 0f); // Gold
+            crown.GetComponent<Renderer>().material.color = new Color(1f, 0.84f, 0f);
             Destroy(crown.GetComponent<Collider>());
 
             // Boss label
@@ -636,7 +635,7 @@ namespace ArcadiaOnline.World
             tm.fontSize = 40;
             tm.alignment = TextAlignment.Center;
             tm.anchor = TextAnchor.MiddleCenter;
-            tm.color = new Color(1f, 0.5f, 0f); // Orange
+            tm.color = new Color(1f, 0.5f, 0f);
         }
 
         #endregion

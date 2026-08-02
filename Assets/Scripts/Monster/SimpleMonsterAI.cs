@@ -11,10 +11,10 @@ namespace ArcadiaOnline.Monster
     /// </summary>
     public class SimpleMonsterAI : MonoBehaviour
     {
-        [Header("Stats")]
+        [Header("Stats (GDD Balance)")]
         [SerializeField] private string monsterName = "Monster";
-        [SerializeField] private float maxHP = 100f;
-        [SerializeField] private float attack = 10f;
+        [SerializeField] private float maxHP = 50f;      // Reduced for faster kills
+        [SerializeField] private float attack = 8f;       // Reduced for balance
         [SerializeField] private float defense = 2f;
         [SerializeField] private float attackRange = 2f;
         [SerializeField] private float detectRange = 8f;
@@ -270,8 +270,8 @@ namespace ArcadiaOnline.Monster
 
             if (player == null) return;
 
-            // Ambil damage dari player
-            float rawDamage = 15f;
+            // Ambil damage dari player (GDD: Lv1 Warrior base ATK = 25)
+            float rawDamage = 25f;
             PlayerStats playerStats = player.GetComponent<PlayerStats>();
             if (playerStats != null)
             {
