@@ -207,6 +207,10 @@ namespace ArcadiaOnline.Player
             effect.transform.position = transform.position;
 
             ParticleSystem ps = effect.AddComponent<ParticleSystem>();
+            
+            // Stop first to allow property changes
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            
             var main = ps.main;
             main.duration = 1f;
             main.startLifetime = 1.5f;
@@ -215,6 +219,7 @@ namespace ArcadiaOnline.Player
             main.startColor = new Color(1f, 0.8f, 0f); // Gold
             main.maxParticles = 30;
             main.loop = false;
+            main.playOnAwake = false;
 
             var emission = ps.emission;
             emission.rateOverTime = 30;
@@ -222,6 +227,9 @@ namespace ArcadiaOnline.Player
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Circle;
             shape.radius = 1f;
+
+            // Now play
+            ps.Play();
 
             // Destroy after animation
             Destroy(effect, 2f);
