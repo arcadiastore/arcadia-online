@@ -58,6 +58,9 @@ namespace ArcadiaOnline.World
             // === NPCs (GDD: Elder Tetua, Blacksmith, Merchant, Guard) ===
             CreateNPCs();
 
+            // === QUESTS (GDD: "Permintaan Tetua") ===
+            CreateQuests();
+
             // === MONSTERS (GDD: Slime Lv1-3, Wolf Lv5-8) ===
             CreateMonsters();
 
@@ -427,6 +430,154 @@ namespace ArcadiaOnline.World
             a.transform.position = pos;
             a.transform.localScale = Vector3.one * size;
             a.GetComponent<Renderer>().material.color = color;
+        }
+
+        #endregion
+
+        #region Quests (GDD)
+
+        private void CreateQuests()
+        {
+            if (QuestManager.Instance == null)
+            {
+                Debug.LogError("[Village] QuestManager not found! Quests will not work.");
+                return;
+            }
+
+            // Create "Permintaan Tetua" quest (Kill 5 Slimes)
+            CreateKillSlimesQuest();
+            
+            // Create "Ancaman Serigala" quest (Kill 3 Wolves)
+            CreateKillWolvesQuest();
+            
+            // Create "Guardian of the Forest" quest (Kill Boss)
+            CreateKillBossQuest();
+
+            if (showDebug) Debug.Log("[Village] Quests created (GDD: Permintaan Tetua, Ancaman Serigala, Guardian)");
+        }
+
+        private void CreateKillSlimesQuest()
+        {
+            // Create quest data at runtime
+            QuestData quest = ScriptableObject.CreateInstance<QuestData>();
+            quest.questID = "quest_kill_slimes";
+            quest.questName = "Permintaan Tetua";
+            quest.description = "Elder Tetua meminta bantuanmu untuk menghilangkan slime yang mengganggu desa. Bunuh 5 Slime di Training Ground.";
+            quest.mainType = QuestType.Kill;
+            quest.recommendedLevel = 1;
+            
+            // Objective: Kill 5 Slimes
+            quest.objectives = new System.Collections.Generic.List<QuestObjective>();
+            var objective = new QuestObjective();
+            objective.description = "Bunuh 5 Slime";
+            objective.type = QuestType.Kill;
+            objective.targetID = "Slime";  // Matches base monster name
+            objective.requiredAmount = 5;
+            objective.currentAmount = 0;
+            quest.objectives.Add(objective);
+            
+            // Rewards
+            quest.rewards = new QuestReward();
+            quest.rewards.exp = 100;
+            quest.rewards.gold = 50;
+            quest.rewards.itemIDs = new System.Collections.Generic.List<string>();
+            
+            // Add to QuestManager
+            if (QuestManager.Instance != null)
+            {
+                // Use reflection to add to allQuests list
+                var allQuestsField = QuestManager.Instance.GetType().GetField("allQuests", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (allQuestsField != null)
+                {
+                    var allQuests = allQuestsField.GetValue(QuestManager.Instance) as System.Collections.Generic.List<QuestData>;
+                    if (allQuests != null)
+                    {
+                        allQuests.Add(quest);
+                        Debug.Log("[Quest] Created: Permintaan Tetua (Kill 5 Slimes)");
+                    }
+                }
+            }
+        }
+
+        private void CreateKillWolvesQuest()
+        {
+            QuestData quest = ScriptableObject.CreateInstance<QuestData>();
+            quest.questID = "quest_kill_wolves";
+            quest.questName = "Ancaman Serigala";
+            quest.description = "Serigala-serigala di hutan semakin berbahaya. Bunuh 3 Serigala untuk melindungi desa.";
+            quest.mainType = QuestType.Kill;
+            quest.recommendedLevel = 3;
+            quest.previousQuestID = "quest_kill_slimes"; // Must complete slimes first
+            
+            quest.objectives = new System.Collections.Generic.List<QuestObjective>();
+            var objective = new QuestObjective();
+            objective.description = "Bunuh 3 Serigala";
+            objective.type = QuestType.Kill;
+            objective.targetID = "Wolf";
+            objective.requiredAmount = 3;
+            objective.currentAmount = 0;
+            quest.objectives.Add(objective);
+            
+            quest.rewards = new QuestReward();
+            quest.rewards.exp = 200;
+            quest.rewards.gold = 100;
+            quest.rewards.itemIDs = new System.Collections.Generic.List<string>();
+            
+            if (QuestManager.Instance != null)
+            {
+                var allQuestsField = QuestManager.Instance.GetType().GetField("allQuests", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (allQuestsField != null)
+                {
+                    var allQuests = allQuestsField.GetValue(QuestManager.Instance) as System.Collections.Generic.List<QuestData>;
+                    if (allQuests != null)
+                    {
+                        allQuests.Add(quest);
+                        Debug.Log("[Quest] Created: Ancaman Serigala (Kill 3 Wolves)");
+                    }
+                }
+            }
+        }
+
+        private void CreateKillBossQuest()
+        {
+            QuestData quest = ScriptableObject.CreateInstance<QuestData>();
+            quest.questID = "quest_kill_boss";
+            quest.questName = "Guardian of the Forest";
+            quest.description = "Boss kuat menghalangi jalan ke Green Forest. Kalahkan Guardian of the Forest!";
+            quest.mainType = QuestType.Boss;
+            quest.recommendedLevel = 8;
+            quest.previousQuestID = "quest_kill_wolves";
+            
+            quest.objectives = new System.Collections.Generic.List<QuestObjective>();
+            var objective = new QuestObjective();
+            objective.description = "Kalahkan Guardian of the Forest";
+            objective.type = QuestType.Kill;
+            objective.targetID = "Guardian of the Forest";
+            objective.requiredAmount = 1;
+            objective.currentAmount = 0;
+            quest.objectives.Add(objective);
+            
+            quest.rewards = new QuestReward();
+            quest.rewards.exp = 500;
+            quest.rewards.gold = 250;
+            quest.rewards.itemIDs = new System.Collections.Generic.List<string>();
+            
+            if (QuestManager.Instance != null)
+            {
+                var allQuestsField = QuestManager.Instance.GetType().GetField("allQuests", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (allQuestsField != null)
+                {
+                    var allQuests = allQuestsField.GetValue(QuestManager.Instance) as System.Collections.Generic.List<QuestData>;
+                    if (allQuests != null)
+                    {
+                        allQuests.Add(quest);
+                        Debug.Log("[Quest] Created: Guardian of the Forest (Kill Boss)");
+                    }
+                }
+            }
         }
 
         #endregion

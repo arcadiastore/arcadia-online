@@ -2,6 +2,7 @@ using UnityEngine;
 using ArcadiaOnline.Player;
 using ArcadiaOnline.Managers;
 using ArcadiaOnline.VFX;
+using ArcadiaOnline.Quest;
 
 namespace ArcadiaOnline.Monster
 {
@@ -394,6 +395,9 @@ namespace ArcadiaOnline.Monster
                 UI.MonsterInfoUI.Instance.HideMonsterInfo();
             }
 
+            // Update quest objectives (kill monster)
+            UpdateQuestOnKill();
+
             // Beri EXP ke player
             GiveEXPToPlayer();
 
@@ -412,6 +416,31 @@ namespace ArcadiaOnline.Monster
             if (col != null) col.enabled = false;
 
             Destroy(gameObject, 2f);
+        }
+
+        /// <summary>
+        /// Update quest objectives when monster is killed.
+        /// </summary>
+        private void UpdateQuestOnKill()
+        {
+            if (Quest.QuestManager.Instance == null) return;
+
+            // Get base monster name (without level suffix)
+            // monsterName is like "Slime_Lv1" or "Wolf_Lv5"
+            string baseName = monsterName;
+            int lvIndex = baseName.IndexOf("_Lv");
+            if (lvIndex > 0)
+            {
+                baseName = baseName.Substring(0, lvIndex);
+            }
+            
+            Debug.Log($"[Quest] Monster killed: {monsterName} (base: {baseName})");
+
+            // Update quest based on base monster name
+            Quest.QuestManager.Instance.UpdateObjective("quest_kill_slimes", Quest.QuestType.Kill, baseName, 1);
+            Quest.QuestManager.Instance.UpdateObjective("quest_kill_wolves", Quest.QuestType.Kill, baseName, 1);
+            Quest.QuestManager.Instance.UpdateObjective("quest_kill_boars", Quest.QuestType.Kill, baseName, 1);
+            Quest.QuestManager.Instance.UpdateObjective("quest_kill_boss", Quest.QuestType.Kill, baseName, 1);
         }
 
         private void GiveEXPToPlayer()
